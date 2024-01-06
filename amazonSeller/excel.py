@@ -9,26 +9,19 @@ from selenium.webdriver.support import expected_conditions as EC
 import json
 
 
-# Use webdriver-manager to handle the Firefox driver installation
-driver_path = '/Applications/chromedriver-mac-arm64/chromedriver'
-service = Service(driver_path)
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')
+import json
+
+def convert_txt_to_json(file_path):
+    data = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            # Split the line by tab
+            parts = line.strip().split('\t')
+            if len(parts) == 2:
+                # Add a dictionary with 'name' and 'link' to the data list
+                data.append({'name': parts[0], 'link': parts[1]})
     
-driver = webdriver.Chrome(service=service, options=options)
+    # Convert the list to JSON
+    return json.dumps(data, indent=4)
 
-
-# Open the Amazon website
-driver.get("https://www.amazon.com")
-
-# Optionally, add some code here to interact with the website
-# e.g., find elements, click buttons, etc.
-
-# Check if the title contains "Amazon"
-if "Amazon" in driver.title:
-    print("Successfully opened Amazon.com and found 'Amazon' in the title.")
-else:
-    print("Amazon.com was not opened correctly.")
-
-# Close the browser window
-driver.quit()
+print(convert_txt_to_json('amazonSeller/a.txt'))

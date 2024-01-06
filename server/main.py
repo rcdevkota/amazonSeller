@@ -1,8 +1,7 @@
 import random
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-
+import time
 
 AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
@@ -33,6 +32,7 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; ARM; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.15254"
 ]
 
+request = requests.Session()
 
 index = 0
 
@@ -61,7 +61,9 @@ def get_subcategories(category_url, id):
         "Referer": "https://www.google.de/",
 }           
     full_url = "https://www.amazon.com"+ category_url
-    response = requests.get(full_url, headers=headers)
+    request.headers.update(headers)
+    response = request.get(full_url)
+    time.sleep(2)
    #response = send_request(full_url)
     # print("response")
     # print(response)
@@ -96,8 +98,8 @@ def get_subcategories(category_url, id):
 all_categories = [
     {
         "id": index,
-        "name": "Any Department",
-        "url": "/Best-Sellers-Video-Games-Mac-Game-Flight-Controls/zgbs/videogames/",
+        "name": "Amazon Devices & Accessories",
+        "url": "/Best-Sellers-Amazon-Devices-Accessories/zgbs/amazon-devices"
     },
 ]
 
