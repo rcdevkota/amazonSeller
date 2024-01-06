@@ -3,6 +3,7 @@ from django.db import models
 class Category(models.Model):
     categoryID = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=255)
+    link = models.CharField(max_length=255, null=True)
 
 class SellerInfo(models.Model):
     sellerID = models.BigAutoField(primary_key=True)

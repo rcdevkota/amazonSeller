@@ -2,8 +2,9 @@ from django.contrib import admin
 from .models import Category, SellerInfo, Subcategory, Products
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('categoryID', 'name')
+    list_display = ('categoryID', 'name','link')
     search_fields = ['name']
+    link = ['link']
 
 class SellerInfoAdmin(admin.ModelAdmin):
     list_display = ('sellerID', 'sellerName', 'email', 'nummer', 'contacted')
