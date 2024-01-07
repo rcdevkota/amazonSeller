@@ -1,8 +1,6 @@
 import random
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-
 
 AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
