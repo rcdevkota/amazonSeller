@@ -1,0 +1,77 @@
+# Ignore compiled files
+*.class
+*.o
+*.pyc
+
+# Ignore temporary files
+*~
+.DS_Store
+
+# Ignore IDE and editor files
+.idea/
+.vscode/
+
+# Ignore dependencies
+node_modules/
+vendor/
+
+# Ignore build artifacts
+build/
+dist/
+
+# Ignore log files
+*.log
+
+# Ignore environment-specific files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# Ignore sensitive or private information
+secrets.yml
+secrets.json
+secrets.env
+
+# Ignore database files
+*.sqlite
+*.db
+
+# Ignore generated documentation
+docs/
+
+# Ignore compiled binaries
+bin/
+exe/
+
+# Ignore cache and temporary files
+.cache/
+.tmp/
+
+# Ignore backup files
+*.bak
+*.swp
+*.swo
+
+# Ignore system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore macOS specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Ignore Windows specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore Linux specific files
+*~
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
