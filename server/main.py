@@ -59,7 +59,6 @@ def get_subcategories(category_url, id):
     user = USER_AGENTS[userAgentIndex]
     if "ref" in category_url:
         category_url = category_url.split("ref")[0]
-    print(category_url)
     headers = {
         "user-agent": user,
         "Cookie": "x-main=4H4PAb9kQtk2wwvWsrYULkO2C1fc3TSisJNgJp4H9kxZPFKG9foI4SD2UGi5iiAo; "
@@ -80,8 +79,9 @@ def get_subcategories(category_url, id):
     while not response:
         response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
         time.sleep(retryBackOff)
-        if retryBackOff >= 5:
+        if retryBackOff >= 10:
             break
+        retryBackOff = retryBackOff + 1 
     # response = send_request(full_url)
     # print("response")      
     # print(response)
@@ -131,10 +131,10 @@ def get_lowest_child_categories(parent_categories):
     global all_categories
 
     for category in parent_categories:
-        # print(category)
+        print(category)
         subcategories = get_subcategories(category['url'],
                                           index)  # Get the subcategories for the current parent category
-        # print(subcategories)
+        print(subcategories)
         if len(subcategories) == 0:  # If there are no subcategories, add the current category to the list of lowest child categories
             all_categories.append(category)
         else:
