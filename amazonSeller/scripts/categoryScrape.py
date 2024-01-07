@@ -1,3 +1,6 @@
+#this script is used to scrape all the categories from amazon
+
+
 import random
 import requests
 from bs4 import BeautifulSoup
@@ -59,6 +62,7 @@ def get_subcategories(category_url, id):
     }           
     full_url = "https://www.amazon.com"+ category_url
     response = requests.get(full_url, headers=headers)
+    #with prxyserver
     #response = send_request(full_url)
     subcategories_data = []
 
@@ -81,7 +85,6 @@ def get_subcategories(category_url, id):
         print(f"Failed to fetch the subcategory page for {full_url}")
     return subcategories_data
 
-# Example usage
 all_categories = [
     {
         "id": index,
