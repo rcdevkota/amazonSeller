@@ -65,7 +65,7 @@ def get_subcategories(category_url, id):
     response = request.get(full_url)
     time.sleep(2)
    #response = send_request(full_url)
-    # print("response")
+    # print("response")      
     # print(response)
     subcategories_data = []
 
