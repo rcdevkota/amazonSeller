@@ -94,6 +94,13 @@ class Product:
             retryBackOff = retryBackOff + 1
         print('Response HTTP Status Code: ', response.status_code)
         return response 
+    
+    def extract_ids(data):
+        ids = []
+        for item in data:
+            if 'id' in item:
+             ids.append(item['id'])
+        return ids
 
 
 def get_product_asin():
@@ -122,7 +129,24 @@ def get_product_asin():
                 break
             time.sleep(retryBackOff)
             retryBackOff = retryBackOff + 1
-    
+        ids = []
+        asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
+        ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
+        print("first page outcome..................")
+        print(ids)
+        #print(json.loads(asinList.get('data-client-recs-list')))
+
+        second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
+        if second_page_link:
+            second_page_url = 'https://www.amazon.com' + second_page_link['href']
+            print(second_page_url)
+            asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
+            ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
+            print("first and second page outcome..................")
+        print(ids)
+        return ids
+        exit(1)
+
         for div in gridItems:
             product_info = div.find('div', {'data-asin': True})
            
@@ -142,9 +166,7 @@ def get_product_asin():
                         'product_url': product_url
                     })
 
-        asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
-        print(json.loads(asinList.get('data-client-recs-list')))
-        exit(1)
+        
 
         url = "https://www.amazon.com/acp/p13n-zg-list-grid-desktop/p13n-zg-list-grid-desktop-064724f0-a682-4eec-bfd6-3b403c2ce94d-1699981641551/nextPage?page-type=zeitgeist&stamp=" + time.time()
 
