@@ -81,8 +81,9 @@ def get_subcategories(category_url):
     while not response:
         response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
         time.sleep(retryBackOff)
-        if retryBackOff >= 5:
+        if retryBackOff >= 10:
             break
+        retryBackOff = retryBackOff + 1
     # response = send_request(full_url)
     # print("response")      
     # print(response)
