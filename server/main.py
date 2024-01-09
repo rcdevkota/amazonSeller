@@ -53,8 +53,9 @@ def send_request(url):
 
 # send_request()
 
-def get_subcategories(category_url, id):
+def get_subcategories(category_url):
     """Fetch and parse subcategories using requests and BeautifulSoup."""
+    global index
     userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
     user = USER_AGENTS[userAgentIndex]
     if "ref" in category_url:
@@ -105,10 +106,11 @@ def get_subcategories(category_url, id):
             subcategory_name = element.get_text().strip()
             subcategory_url = element['href']
             if subcategory_name:
-                id = id + 1
-                subcategories_data.append({"id": id, "name": subcategory_name, "url": subcategory_url})
+                index = index + 1
+                subcategories_data.append({"id": index, "name": subcategory_name, "url": subcategory_url})
     else:
         print(f"Failed to fetch the subcategory page for {full_url}")
+        subcategories_data = False
     # print("subcategories_data")
     # print(subcategories_data)
     return subcategories_data
@@ -129,12 +131,16 @@ def get_lowest_child_categories(parent_categories):
     # print("parentcategories")
     # print(parent_categories)
     global all_categories
+    loop_this = parent_categories.copy()
 
-    for category in parent_categories:
+    for category in loop_this:
         # print(category)
-        subcategories = get_subcategories(category['url'],
-                                          index)  # Get the subcategories for the current parent category
+        subcategories = get_subcategories(category['url'])  # Get the subcategories for the current parent category
         # print(subcategories)
+
+        if isinstance(subcategories, bool) and not subcategories:
+            category['error'] = 'Failed to fetch children to this category, may or may not include children categories.'
+            subcategories = []
         if len(subcategories) == 0:  # If there are no subcategories, add the current category to the list of lowest child categories
             all_categories.append(category)
         else:
