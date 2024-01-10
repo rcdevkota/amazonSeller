@@ -2,7 +2,7 @@ import random
 import requests
 from bs4 import BeautifulSoup
 import time
-
+import json
 AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
@@ -111,6 +111,7 @@ def get_subcategories(category_url):
                 subcategories_data.append({"id": index, "name": subcategory_name, "url": subcategory_url})
     else:
         print(f"Failed to fetch the subcategory page for {full_url}")
+        print("amazon le Block hanyo")
         subcategories_data = False
     # print("subcategories_data")
     # print(subcategories_data)
@@ -120,10 +121,129 @@ def get_subcategories(category_url):
 # Example usage
 all_categories = [
     {
-        "id": index,
-        "name": "Amazon Devices & Accessories",
-        "url": "/Best-Sellers-Amazon-Devices-Accessories/zgbs/amazon-devices"
+        "name": "Amazon Renewed",
+        "url": "/Best-Sellers-Amazon-Renewed/zgbs/amazon-renewed"
     },
+    {
+        "name": "Appliances",
+        "url": "/Best-Sellers-Appliances/zgbs/appliances"
+    },
+    {
+        "name": "Arts, Crafts & Sewing",
+        "url": "/Best-Sellers-Arts-Crafts-Sewing/zgbs/arts-crafts"
+    },
+    {
+        "name": "Automotive",
+        "url": "/Best-Sellers-Automotive/zgbs/automotive"
+    },
+    {
+        "name": "Baby",
+        "url": "/Best-Sellers-Baby/zgbs/baby-products"
+    },
+    {
+        "name": "Beauty & Personal Care",
+        "url": "/Best-Sellers-Beauty-Personal-Care/zgbs/beauty"
+    },
+    {
+        "name": "Camera & Photo Products",
+        "url": "/best-sellers-camera-photo/zgbs/photo"
+    },
+    {
+        "name": "Cell Phones & Accessories",
+        "url": "/Best-Sellers-Cell-Phones-Accessories/zgbs/wireless"
+    },
+    {
+        "name": "Climate Pledge Friendly",
+        "url": "/Best-Sellers-Climate-Pledge-Friendly/zgbs/climate-pledge"
+    },
+    {
+        "name": "Clothing, Shoes & Jewelry",
+        "url": "/Best-Sellers-Clothing-Shoes-Jewelry/zgbs/fashion"
+    },
+    {
+        "name": "Collectible Coins",
+        "url": "/Best-Sellers-Collectible-Coins/zgbs/coins"
+    },
+    {
+        "name": "Computers & Accessories",
+        "url": "/Best-Sellers-Computers-Accessories/zgbs/pc"
+    },
+    {
+        "name": "Digital Educational Resources",
+        "url": "/Best-Sellers-Digital-Educational-Resources/zgbs/digital-educational-resources"
+    },
+    {
+        "name": "Electronics",
+        "url": "/Best-Sellers-Electronics/zgbs/electronics"
+    },
+    {
+        "name": "Entertainment Collectibles",
+        "url": "/Best-Sellers-Entertainment-Collectibles/zgbs/entertainment-collectibles"
+    },
+    {
+        "name": "Grocery & Gourmet Food",
+        "url": "/Best-Sellers-Grocery-Gourmet-Food/zgbs/grocery"
+    },
+    {
+        "name": "Handmade Products",
+        "url": "/Best-Sellers-Handmade-Products/zgbs/handmade"
+    },
+    {
+        "name": "Health & Household",
+        "url": "/Best-Sellers-Health-Household/zgbs/hpc"
+    },
+    {
+        "name": "Home & Kitchen",
+        "url": "/Best-Sellers-Home-Kitchen/zgbs/home-garden"
+    },
+    {
+        "name": "Industrial & Scientific",
+        "url": "/Best-Sellers-Industrial-Scientific/zgbs/industrial"
+    },
+    {
+        "name": "Kitchen & Dining",
+        "url": "/Best-Sellers-Kitchen-Dining/zgbs/kitchen"
+    },
+    {
+        "name": "Musical Instruments",
+        "url": "/Best-Sellers-Musical-Instruments/zgbs/musical-instruments"
+    },
+    {
+        "name": "Office Products",
+        "url": "/Best-Sellers-Office-Products/zgbs/office-products"
+    },
+    {
+        "name": "Patio, Lawn & Garden",
+        "url": "/Best-Sellers-Patio-Lawn-Garden/zgbs/lawn-garden"
+    },
+    {
+        "name": "Pet Supplies",
+        "url": "/Best-Sellers-Pet-Supplies/zgbs/pet-supplies"
+    },
+    {
+        "name": "Software",
+        "url": "/best-sellers-software/zgbs/software"
+    },
+    {
+        "name": "Sports & Outdoors",
+        "url": "/Best-Sellers-Sports-Outdoors/zgbs/sporting-goods"
+    },
+    {
+        "name": "Sports Collectibles",
+        "url": "/Best-Sellers-Sports-Collectibles/zgbs/sports-collectibles"
+    },
+    {
+        "name": "Tools & Home Improvement",
+        "url": "/Best-Sellers-Tools-Home-Improvement/zgbs/hi"
+    },
+    {
+        "name": "Toys & Games",
+        "url": "/Best-Sellers-Toys-Games/zgbs/toys-and-games"
+    },
+    {
+        "name": "Unique Finds",
+        "url": "/Best-Sellers-Unique-Finds/zgbs/boost"
+    }
 ]
 
 
@@ -149,4 +269,6 @@ def get_lowest_child_categories(parent_categories):
 
 
 get_lowest_child_categories(all_categories)  # Get the lowest child categories for the given parent categories
+with open('categories.json', 'w') as f:
+    f.write(json.dumps(all_categories))
 print(all_categories)
