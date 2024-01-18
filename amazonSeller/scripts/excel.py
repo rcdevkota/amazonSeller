@@ -1,11 +1,5 @@
 #This script creates a new excel file and writes the data from the database into it
 #the excel file contains seller information
-
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait as wait
-from selenium.webdriver.support import expected_conditions as EC
 import json
 
 
