@@ -1,12 +1,9 @@
 #this script is used to scrape all the categories from amazon
-
-
 import random
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-
-
+import time
+import json
 AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
@@ -36,74 +33,146 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; ARM; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.15254"
 ]
 
+request = requests.Session()
 
 index = 0
 
+
 def send_request(url):
-    """Send a GET request to the specified URL using the ScrapingBee API."""
     response = requests.get(
         url='https://app.scrapingbee.com/api/v1/',
         params={
             'api_key': 'H6U4CNF21J3B83L0CZL0RLFM0GE7T9PZ9S6DTUT60EOPL7YZB0YSAHVO3XHM5SB6VAHBFFIZDUKKDN9S',
-            'url': url,  
+            'url': url,
         },
+
     )
     print('Response HTTP Status Code: ', response.status_code)
-    return response 
+    # print('Response HTTP Response Body: ', response.content)
+    return response
 
-def get_subcategories(category_url, id):
+
+# send_request()
+
+def get_subcategories(category_url):
     """Fetch and parse subcategories using requests and BeautifulSoup."""
-    userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)  
+    global index
+    userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
     user = USER_AGENTS[userAgentIndex]
+    if "ref" in category_url:
+        category_url = category_url.split("ref")[0]
+    print(category_url)
     headers = {
         "user-agent": user,
-        "Cookie": "",
-        "Referer": "https://www.google.de/",
-    }           
-    full_url = "https://www.amazon.com"+ category_url
-    response = requests.get(full_url, headers=headers)
-    #with prxyserver
-    #response = send_request(full_url)
+        "Cookie": "x-main=4H4PAb9kQtk2wwvWsrYULkO2C1fc3TSisJNgJp4H9kxZPFKG9foI4SD2UGi5iiAo; "
+                  "at-main=Atza"
+                  "|IwEBIP9O0aNybb5YG0xUQD9mk46jqanwHrU_NluV2rRSziiyWBfvVmC2dAZbfY1rRcAWEzrdYGG0LIyR9nJ5XZOOZBpC3fIrAz6iLaNWrVhZ_SiDF0QBLTXfAbbfLYlMLdKCYuB_7_ueRyiuJZWJ5qMU0ENjAsLsLAaZNbv_FhDIAlBdVfcgscdGjbUleDiEZbpEOkVa2OsOQs0Nyvssd_tErxda; sess-at-main=\"aQTU63C+9QPTNmIFQ+jeuMMcPkdu83eO5EmAyUR1NVU=\"; ubid-main=131-3218811-7398132; aws-target-data=%7B%22support%22%3A%221%22%7D; sp-cdn=\"L5Z9:DE\"; aws-ubid-main=458-4182210-1032216; aws-userInfo-signed=eyJ0eXAiOiJKV1MiLCJrZXlSZWdpb24iOiJ1cy1lYXN0LTEiLCJhbGciOiJFUzM4NCIsImtpZCI6ImRiYWRkNTY2LWE4MjEtNGM0NC04MDhhLTFlNzE1MWFlYWM2MCJ9.eyJzdWIiOiIiLCJzaWduaW5UeXBlIjoiUFVCTElDIiwiaXNzIjoiaHR0cDpcL1wvc2lnbmluLmF3cy5hbWF6b24uY29tXC9zaWduaW4iLCJrZXliYXNlIjoiWFdvcHJGSk9WZ0xPTE93XC9WQm1UN0xiR01qQlFTSW53RVl3dDZ1VWM5d009IiwiYXJuIjoiYXJuOmF3czppYW06OjQ1MzkyMTYzMjUzOTpyb290IiwidXNlcm5hbWUiOiJBeWFzaFBNVCJ9.SyJSbYrIC0g4z-DdImqudc1ZQSzx-kEVApme-FHr0WHhKrWJHVtgn0fJi5Fji87MvQFb8HM-oXBqv_l1pbZ_uQD1xMECFAfUzp5MJqOtTU3IXD8YWHeQ_LG8G4jARyLr; aws-userInfo=%7B%22arn%22%3A%22arn%3Aaws%3Aiam%3A%3A453921632539%3Aroot%22%2C%22alias%22%3A%22%22%2C%22username%22%3A%22AyashPMT%22%2C%22keybase%22%3A%22XWoprFJOVgLOLOw%2FVBmT7LbGMjBQSInwEYwt6uUc9wM%5Cu003d%22%2C%22issuer%22%3A%22http%3A%2F%2Fsignin.aws.amazon.com%2Fsignin%22%2C%22signinType%22%3A%22PUBLIC%22%7D; session-id=140-3119798-0790727; session-id-apay=140-3119798-0790727; session-id-time=2082787201l; i18n-prefs=USD; skin=noskin; lc-main=en_US; csm-hit=tb:GVWHP05NVKPWXYHJS781+s-GVWHP05NVKPWXYHJS781|1704659747878&t:1704659747878&adb:adblk_yes; session-token=XwKzwhcALwSUcEAjOAOraT4WgvLKkfX3zqTWw+Yo8RUTuDbKqcAyHUNNHYLmV8pNfgo9XNNhsScZvRKaC3LcYyEE70fmSPfuTJjFjDYPH7ByxKHcvoxkpOqtB3+umRxPNZztPNp8j6TymgZNJpJUP8Y0r0CCfCiLBgiza30gY7V8B9tP4XRtY8y32G2I+evSNqaHY7xjbiHXjb39Uf3Bt4PxLis52cDbicGbMSNMGE9ygV1uivid7OP6ewOe5Ke6qAeI2pAozJcoCOZPaLqtcQzWVFvwxeKIaJ1ZK+RurVBJNhCkjU+SitnLRl3x0pEw1ee9cF3KxrNaJu1ZEcitKGmkL10Ef2lh",
+        "Referer": "https://www.amazon.com",
+        "authority": "www.amazon.com",
+        "path": category_url,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
+                  "application/signed-exchange;v=b3;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br",
+    }
+
+
+
+    full_url = "https://www.amazon.com" + category_url
+    request.headers.update(headers)
+    retryBackOff = 1
+    response = None
+    while not response:
+        response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
+        time.sleep(retryBackOff)
+        if retryBackOff >= 10:
+            break
+        retryBackOff = retryBackOff + 1
+    # response = send_request(full_url)
+    # print("response")      
+    # print(response)
     subcategories_data = []
 
     if response:
         soup = BeautifulSoup(response.content, 'html.parser')
+        # Adjust the selector based on the structure of the Amazon subcategory page
         subcategory_elements = soup.find("div", {'class': '_p13n-zg-nav-tree-all_style_zg-browse-root__-jwNv'})
+        # print("subcategory_elements..........................")
+        # print(subcategory_elements)
         if subcategory_elements is None:
             return subcategories_data
-        subcategory_elements = (subcategory_elements.find("div", {"role": "group"})).find_all("div", {"role": "treeitem"})
+        subcategory_elements = (subcategory_elements.find("div", {"role": "group"})).find_all("div",
+                                                                                              {"role": "treeitem"})
         for elementDiv in subcategory_elements:
             element = elementDiv.find("a")
-            if element is None: 
+            if element is None:
+                # get_products(response, id)
                 return []
             subcategory_name = element.get_text().strip()
             subcategory_url = element['href']
             if subcategory_name:
-                id = id + 1
-                subcategories_data.append({"id": id, "name": subcategory_name, "url": subcategory_url})
+                index = index + 1
+                subcategories_data.append({"id": index, "name": subcategory_name, "url": subcategory_url})
+                
     else:
         print(f"Failed to fetch the subcategory page for {full_url}")
+        print("Blocked the request by amazon")
+        subcategories_data = False
+    # print("subcategories_data")
     return subcategories_data
 
+
+# Example usage
 all_categories = [
     {
-        "id": index,
-        "name": "Any Department",
-        "url": "/Best-Sellers-Video-Games-Mac-Game-Flight-Controls/zgbs/videogames/",
+        "name": "Software",
+        "url": "/best-sellers-software/zgbs/software"
     },
+    {
+        "name": "Sports & Outdoors",
+        "url": "/Best-Sellers-Sports-Outdoors/zgbs/sporting-goods"
+    },
+    {
+        "name": "Sports Collectibles",
+        "url": "/Best-Sellers-Sports-Collectibles/zgbs/sports-collectibles"
+    },
+    {
+        "name": "Tools & Home Improvement",
+        "url": "/Best-Sellers-Tools-Home-Improvement/zgbs/hi"
+    },
+    {
+        "name": "Toys & Games",
+        "url": "/Best-Sellers-Toys-Games/zgbs/toys-and-games"
+    },
+    {
+        "name": "Unique Finds",
+        "url": "/Best-Sellers-Unique-Finds/zgbs/boost"
+    }
 ]
+
 
 def get_lowest_child_categories(parent_categories):
     """Loop through all parent categories and get lowest child categories."""
+    # print("parentcategories")
+    # print(parent_categories)
     global all_categories
+    loop_this = parent_categories.copy()
 
-    for category in parent_categories:
-        subcategories = get_subcategories(category['url'], index)
-        if len(subcategories) == 0:
+    for category in loop_this:
+        # print(category)
+        subcategories = get_subcategories(category['url'])  # Get the subcategories for the current parent category
+        # print(subcategories)
+
+        if isinstance(subcategories, bool) and not subcategories:
+            category['error'] = 'Failed to fetch children to this category, may or may not include children categories.'
+            subcategories = []
+        if len(subcategories) == 0:  # If there are no subcategories, add the current category to the list of lowest child categories
             all_categories.append(category)
         else:
-            get_lowest_child_categories(subcategories)
+            get_lowest_child_categories(subcategories)  # Get the subcategories for the current subcategory
 
 
-get_lowest_child_categories(all_categories)
+get_lowest_child_categories(all_categories)  # Get the lowest child categories for the given parent categories
+with open('list.json', 'w') as f:
+    f.write(json.dumps(all_categories))
 print(all_categories)
+print(index)
