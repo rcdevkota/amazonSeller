@@ -107,46 +107,48 @@ class Product:
 
 
 def get_product_asin(url):
-        full_url = "/best-sellers-video-games/zgbs/videogames/ref=zg_bs_nav_videogames_0"
-        response = Product.send_request(url)
+        try:
+            full_url = "/best-sellers-video-games/zgbs/videogames/ref=zg_bs_nav_videogames_0"
+            response = Product.send_request(url)
 
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        
-
-        # Initialize an empty list to store product data
-        products_data = []
-        product_info = None
-        # Iterate over each product div and extract required information
-    
-        grid = soup.find('div', {'class': 'p13n-gridRow'})
-        gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
-
-        retryBackOff = 1
-        while len(gridItems) == 0:
-            response = Product.send_request(full_url)
             soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Initialize an empty list to store product data
+            products_data = []
+            product_info = None
+            # Iterate over each product div and extract required information
+
             grid = soup.find('div', {'class': 'p13n-gridRow'})
             gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
-            if retryBackOff > 3:
-                break
-            time.sleep(retryBackOff)
-            retryBackOff = retryBackOff + 1
-        ids = []
-        asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
-        ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-        #print("first page outcome..................")
-        #print(ids)
-        #print(json.loads(asinList.get('data-client-recs-list')))
 
-        second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
-        if second_page_link:
-            second_page_url = 'https://www.amazon.com' + second_page_link['href']
-            #print(second_page_url)
+            retryBackOff = 1
+            while len(gridItems) == 0:
+                response = Product.send_request(full_url)
+                soup = BeautifulSoup(response.content, 'html.parser')
+                grid = soup.find('div', {'class': 'p13n-gridRow'})
+                gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
+                if retryBackOff > 3:
+                    break
+                time.sleep(retryBackOff)
+                retryBackOff = retryBackOff + 1
+            ids = []
             asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
             ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-            #print("first and second page outcome..................")
-        #print(ids)
+            #print("first page outcome..................")
+            #print(ids)
+            #print(json.loads(asinList.get('data-client-recs-list')))
+
+            second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
+            if second_page_link:
+                second_page_url = 'https://www.amazon.com' + second_page_link['href']
+                #print(second_page_url)
+                asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
+                ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
+                #print("first and second page outcome..................")
+            #print(ids)
+        except Exception as e:
+            print(f"An unexpected error occurred: {str(e)}")
+            ids = []  # Return default ids if an error occurs
         return ids
 
         # for div in gridItems:
