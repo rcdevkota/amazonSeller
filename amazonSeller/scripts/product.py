@@ -201,6 +201,30 @@ def get_product_asin(url):
         # # Convert the list of product data to JSON
         # print(products_data)
         # return json.dumps(products_data, indent=4)
+def delete_ids_from_list():
+    file_path = os.path.join(os.path.dirname(__file__), "list.json")
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+            
+        for item in data:
+            if "id" in item:
+                del item["id"]
+        
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+def delete_items_if_false_url():
+    file_path = os.path.join(os.path.dirname(__file__), "list.json")
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+            
+        data = [item for item in data if "url" not in item or "/zgbs/" in item.get("url", "")]
+        
+        with open(file_path, "w") as file:
+            json.dump(data, file)            
 
 subcategories = [{
         "name": "Appliances",
@@ -236,5 +260,6 @@ def getall_asin_from_sub_category():
             json.dump(data, file)
 
 getall_asin_from_sub_category()
-print("done")
-print(products.index)
+#print("done")
+# print(products.index)
+#delete_items_if_false_url()
