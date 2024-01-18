@@ -7,6 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import json
+import os
 import time
 
 AMAZON_BASE_URL = "https://www.amazon.com/"
@@ -55,7 +56,7 @@ def send_request(url):
 
 class Product:
     """Product class."""
-
+    index = 0
     def __init__(self, value):  # Constructor
         self.my_attribute = value
 
@@ -68,7 +69,7 @@ class Product:
         user = USER_AGENTS[userAgentIndex]
         if "ref" in url:
             url = url.split("ref")[0]
-        print(url)
+        
         headers = {
             "user-agent": user,
             "Cookie": "x-main=4H4PAb9kQtk2wwvWsrYULkO2C1fc3TSisJNgJp4H9kxZPFKG9foI4SD2UGi5iiAo; "
@@ -83,12 +84,14 @@ class Product:
         }
 
         full_url = "https://www.amazon.com" + url
+        print(full_url)
         request.headers.update(headers)
         retryBackOff = 1
         response = None
         while not response:
+            index=+ 1
             response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
-            if retryBackOff >= 5:
+            if retryBackOff >= 10:
                 break
             time.sleep(retryBackOff)
             retryBackOff = retryBackOff + 1
@@ -103,9 +106,9 @@ class Product:
         return ids
 
 
-def get_product_asin():
+def get_product_asin(url):
         full_url = "/best-sellers-video-games/zgbs/videogames/ref=zg_bs_nav_videogames_0"
-        response = Product.send_request(full_url)
+        response = Product.send_request(url)
 
 
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -132,18 +135,18 @@ def get_product_asin():
         ids = []
         asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
         ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-        print("first page outcome..................")
-        print(ids)
+        #print("first page outcome..................")
+        #print(ids)
         #print(json.loads(asinList.get('data-client-recs-list')))
 
         second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
         if second_page_link:
             second_page_url = 'https://www.amazon.com' + second_page_link['href']
-            print(second_page_url)
+            #print(second_page_url)
             asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
             ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-            print("first and second page outcome..................")
-        print(ids)
+            #print("first and second page outcome..................")
+        #print(ids)
         return ids
 
         # for div in gridItems:
@@ -199,5 +202,39 @@ def get_product_asin():
         # print(products_data)
         # return json.dumps(products_data, indent=4)
 
+subcategories = [{
+        "name": "Appliances",
+        "link": "/Best-Sellers-Appliances/zgbs/appliances"
+    },
+    {
+        "name": "Apps & Games",
+        "link": "/Best-Sellers-Apps-Games/zgbs/mobile-apps"
+    },
+    {
+        "name": "Arts, Crafts & Sewing",
+        "link": "/Best-Sellers-Arts-Crafts-Sewing/zgbs/arts-crafts"
+    },]
 
-print(get_product_asin())
+# for subcategory in subcategories:
+#     link = subcategory["link"]
+#     print(get_product_asin(link))
+
+def getall_asin_from_sub_category():
+    file_path = os.path.join(os.path.dirname(__file__), "list.json")
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            if "url" in item:
+                asins = get_product_asin(item["url"])
+                item["asins"] = asins
+                print(item)
+        
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+
+getall_asin_from_sub_category()
+print("done")
+print(products.index)
