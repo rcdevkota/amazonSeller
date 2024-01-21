@@ -37,23 +37,6 @@ request = requests.Session()
 
 index = 0
 
-
-def send_request(url):
-    response = requests.get(
-        url='https://app.scrapingbee.com/api/v1/',
-        params={
-            'api_key': 'H6U4CNF21J3B83L0CZL0RLFM0GE7T9PZ9S6DTUT60EOPL7YZB0YSAHVO3XHM5SB6VAHBFFIZDUKKDN9S',
-            'url': url,
-        },
-
-    )
-    print('Response HTTP Status Code: ', response.status_code)
-    # print('Response HTTP Response Body: ', response.content)
-    return response
-
-
-# send_request()
-
 def get_subcategories(category_url):
     """Fetch and parse subcategories using requests and BeautifulSoup."""
     global index
@@ -96,8 +79,8 @@ def get_subcategories(category_url):
         soup = BeautifulSoup(response.content, 'html.parser')
         # Adjust the selector based on the structure of the Amazon subcategory page
         subcategory_elements = soup.find("div", {'class': '_p13n-zg-nav-tree-all_style_zg-browse-root__-jwNv'})
-        # print("subcategory_elements..........................")
-        # print(subcategory_elements)
+        print("subcategory_elements..........................")
+        #print(subcategory_elements)
         if subcategory_elements is None:
             return subcategories_data
         subcategory_elements = (subcategory_elements.find("div", {"role": "group"})).find_all("div",
@@ -123,14 +106,102 @@ def get_subcategories(category_url):
 
 # Example usage
 all_categories = [
-    {
-        "name": "Software",
-        "url": "/best-sellers-software/zgbs/software"
-    },
-    {
-        "name": "Unique Finds",
-        "url": "/Best-Sellers-Unique-Finds/zgbs/boost"
-    }
+ {
+            "name": "Amazon-Geräte & Zubehör",
+            "url": "/gp/bestsellers/amazon-devices/ref=zg_bs_nav_amazon-devices_0"
+        },
+        {
+            "name": "Apps & Spiele",
+            "url": "/gp/bestsellers/mobile-apps/ref=zg_bs_nav_mobile-apps_0"
+        },
+        {
+            "name": "Auto & Motorrad",
+            "url": "/gp/bestsellers/automotive/ref=zg_bs_nav_automotive_0"
+        },
+        {
+            "name": "Baby",
+            "url": "/gp/bestsellers/baby/ref=zg_bs_nav_baby_0"
+        },
+        {
+            "name": "Baumarkt",
+            "url": "/gp/bestsellers/diy/ref=zg_bs_nav_diy_0"
+        },
+        {
+            "name": "Beleuchtung",
+            "url": "/gp/bestsellers/lighting/ref=zg_bs_nav_lighting_0"
+        },
+        {
+            "name": "Bürobedarf & Schreibwaren",
+            "url": "/gp/bestsellers/officeproduct/ref=zg_bs_nav_officeproduct_0"
+        },
+        {
+            "name": "Climate Pledge Friendly",
+            "url": "/gp/bestsellers/climate-pledge/ref=zg_bs_nav_climate-pledge_0"
+        },
+        {
+            "name": "Computer & Zubehör",
+            "url": "/gp/bestsellers/computers/ref=zg_bs_nav_computers_0"
+        },
+        {
+            "name": "Drogerie & Körperpflege",
+            "url": "/gp/bestsellers/drugstore/ref=zg_bs_nav_drugstore_0"
+        },
+        {
+            "name": "Elektro-Großgeräte",
+            "url": "/gp/bestsellers/appliances/ref=zg_bs_nav_appliances_0"
+        },
+        {
+            "name": "Elektronik & Foto",
+            "url": "/gp/bestsellers/ce-de/ref=zg_bs_nav_ce-de_0"
+        },
+        {
+            "name": "Fashion",
+            "url": "/gp/bestsellers/fashion/ref=zg_bs_nav_fashion_0"
+        },
+        {
+            "name": "Garten",
+            "url": "/gp/bestsellers/garden/ref=zg_bs_nav_garden_0"
+        },
+        {
+            "name": "Gewerbe, Industrie & Wissenschaft",
+            "url": "/gp/bestsellers/industrial/ref=zg_bs_nav_industrial_0"
+        },
+        {
+            "name": "Handmade Produkte",
+            "url": "/gp/bestsellers/handmade/ref=zg_bs_nav_handmade_0"
+        },
+        {
+            "name": "Haustier",
+            "url": "/gp/bestsellers/pet-supplies/ref=zg_bs_nav_pet-supplies_0"
+        },
+        {
+            "name": "Kamera & Foto",
+            "url": "/gp/bestsellers/photo/ref=zg_bs_nav_photo_0"
+        },
+        {
+            "name": "Kosmetik",
+            "url": "/gp/bestsellers/beauty/ref=zg_bs_nav_beauty_0"
+        },
+        {
+            "name": "Küche, Haushalt & Wohnen",
+            "url": "/gp/bestsellers/kitchen/ref=zg_bs_nav_kitchen_0"
+        },
+        {
+            "name": "Lebensmittel & Getränke",
+            "url": "/gp/bestsellers/grocery/ref=zg_bs_nav_grocery_0"
+        },
+        {
+            "name": "Musikinstrumente & DJ-Equipment",
+            "url": "/gp/bestsellers/musical-instruments/ref=zg_bs_nav_musical-instruments_0"
+        },
+        {
+            "name": "Spielzeug",
+            "url": "/gp/bestsellers/toys/ref=zg_bs_nav_toys_0"
+        },
+        {
+            "name": "Sport & Freizeit",
+            "url": "/gp/bestsellers/sports/ref=zg_bs_nav_sports_0"
+        }
 ]
 
 
