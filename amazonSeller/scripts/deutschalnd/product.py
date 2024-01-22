@@ -9,8 +9,7 @@ from urllib.parse import urljoin
 import json
 import os
 import time
-
-AMAZON_BASE_URL = "https://www.amazon.de/"
+AMAZON_BASE_URL = "https://www.amazon.de"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
@@ -39,64 +38,57 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; ARM; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.15254"
 ]
 request = requests.Session()
-products = []
-def send_request(url):
-    response = requests.get(
-        url='https://app.scrapingbee.com/api/v1/',
-        params={
-            'api_key': 'H6U4CNF21J3B83L0CZL0RLFM0GE7T9PZ9S6DTUT60EOPL7YZB0YSAHVO3XHM5SB6VAHBFFIZDUKKDN9S',
-            'url': url,
-        },
-
-    )
-    print('Response HTTP Status Code: ', response.status_code)
-    # print('Response HTTP Response Body: ', response.content)
-    return response
-
 
 class Product:
     """Product class."""
-    index = 0
     def __init__(self, value):  # Constructor
         self.my_attribute = value
-
     def my_method(self):
         return f"Value is {self.my_attribute}"
-    
     def send_request(url):
+        # try:
+        #     with open('counter.txt', 'r') as file:
+        #         index = int(file.read())
+        # except FileNotFoundError:
+        index = 0
+
         """Fetch and parse subcategories using requests and BeautifulSoup."""
         userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
         user = USER_AGENTS[userAgentIndex]
         # if "ref" in url:
         #     url = url.split("ref")[0]
-        
         headers = {
             "user-agent": user,
             "Cookie": "x-main=4H4PAb9kQtk2wwvWsrYULkO2C1fc3TSisJNgJp4H9kxZPFKG9foI4SD2UGi5iiAo; "
-                    "at-main=Atza"
-                    "|IwEBIP9O0aNybb5YG0xUQD9mk46jqanwHrU_NluV2rRSziiyWBfvVmC2dAZbfY1rRcAWEzrdYGG0LIyR9nJ5XZOOZBpC3fIrAz6iLaNWrVhZ_SiDF0QBLTXfAbbfLYlMLdKCYuB_7_ueRyiuJZWJ5qMU0ENjAsLsLAaZNbv_FhDIAlBdVfcgscdGjbUleDiEZbpEOkVa2OsOQs0Nyvssd_tErxda; sess-at-main=\"aQTU63C+9QPTNmIFQ+jeuMMcPkdu83eO5EmAyUR1NVU=\"; ubid-main=131-3218811-7398132; aws-target-data=%7B%22support%22%3A%221%22%7D; sp-cdn=\"L5Z9:DE\"; aws-ubid-main=458-4182210-1032216; aws-userInfo-signed=eyJ0eXAiOiJKV1MiLCJrZXlSZWdpb24iOiJ1cy1lYXN0LTEiLCJhbGciOiJFUzM4NCIsImtpZCI6ImRiYWRkNTY2LWE4MjEtNGM0NC04MDhhLTFlNzE1MWFlYWM2MCJ9.eyJzdWIiOiIiLCJzaWduaW5UeXBlIjoiUFVCTElDIiwiaXNzIjoiaHR0cDpcL1wvc2lnbmluLmF3cy5hbWF6b24uY29tXC9zaWduaW4iLCJrZXliYXNlIjoiWFdvcHJGSk9WZ0xPTE93XC9WQm1UN0xiR01qQlFTSW53RVl3dDZ1VWM5d009IiwiYXJuIjoiYXJuOmF3czppYW06OjQ1MzkyMTYzMjUzOTpyb290IiwidXNlcm5hbWUiOiJBeWFzaFBNVCJ9.SyJSbYrIC0g4z-DdImqudc1ZQSzx-kEVApme-FHr0WHhKrWJHVtgn0fJi5Fji87MvQFb8HM-oXBqv_l1pbZ_uQD1xMECFAfUzp5MJqOtTU3IXD8YWHeQ_LG8G4jARyLr; aws-userInfo=%7B%22arn%22%3A%22arn%3Aaws%3Aiam%3A%3A453921632539%3Aroot%22%2C%22alias%22%3A%22%22%2C%22username%22%3A%22AyashPMT%22%2C%22keybase%22%3A%22XWoprFJOVgLOLOw%2FVBmT7LbGMjBQSInwEYwt6uUc9wM%5Cu003d%22%2C%22issuer%22%3A%22http%3A%2F%2Fsignin.aws.amazon.com%2Fsignin%22%2C%22signinType%22%3A%22PUBLIC%22%7D; session-id=140-3119798-0790727; session-id-apay=140-3119798-0790727; session-id-time=2082787201l; i18n-prefs=USD; skin=noskin; lc-main=en_US; csm-hit=tb:GVWHP05NVKPWXYHJS781+s-GVWHP05NVKPWXYHJS781|1704659747878&t:1704659747878&adb:adblk_yes; session-token=XwKzwhcALwSUcEAjOAOraT4WgvLKkfX3zqTWw+Yo8RUTuDbKqcAyHUNNHYLmV8pNfgo9XNNhsScZvRKaC3LcYyEE70fmSPfuTJjFjDYPH7ByxKHcvoxkpOqtB3+umRxPNZztPNp8j6TymgZNJpJUP8Y0r0CCfCiLBgiza30gY7V8B9tP4XRtY8y32G2I+evSNqaHY7xjbiHXjb39Uf3Bt4PxLis52cDbicGbMSNMGE9ygV1uivid7OP6ewOe5Ke6qAeI2pAozJcoCOZPaLqtcQzWVFvwxeKIaJ1ZK+RurVBJNhCkjU+SitnLRl3x0pEw1ee9cF3KxrNaJu1ZEcitKGmkL10Ef2lh",
-            "Referer": "https://www.amazon.com",
-            "authority": "www.amazon.com",
+                      "at-main=Atza"
+                      "|IwEBIP9O0aNybb5YG0xUQD9mk46jqanwHrU_NluV2rRSziiyWBfvVmC2dAZbfY1rRcAWEzrdYGG0LIyR9nJ5XZOOZBpC3fIrAz6iLaNWrVhZ_SiDF0QBLTXfAbbfLYlMLdKCYuB_7_ueRyiuJZWJ5qMU0ENjAsLsLAaZNbv_FhDIAlBdVfcgscdGjbUleDiEZbpEOkVa2OsOQs0Nyvssd_tErxda; sess-at-main=\"aQTU63C+9QPTNmIFQ+jeuMMcPkdu83eO5EmAyUR1NVU=\"; ubid-main=131-3218811-7398132; aws-target-data=%7B%22support%22%3A%221%22%7D; sp-cdn=\"L5Z9:DE\"; aws-ubid-main=458-4182210-1032216; aws-userInfo-signed=eyJ0eXAiOiJKV1MiLCJrZXlSZWdpb24iOiJ1cy1lYXN0LTEiLCJhbGciOiJFUzM4NCIsImtpZCI6ImRiYWRkNTY2LWE4MjEtNGM0NC04MDhhLTFlNzE1MWFlYWM2MCJ9.eyJzdWIiOiIiLCJzaWduaW5UeXBlIjoiUFVCTElDIiwiaXNzIjoiaHR0cDpcL1wvc2lnbmluLmF3cy5hbWF6b24uY29tXC9zaWduaW4iLCJrZXliYXNlIjoiWFdvcHJGSk9WZ0xPTE93XC9WQm1UN0xiR01qQlFTSW53RVl3dDZ1VWM5d009IiwiYXJuIjoiYXJuOmF3czppYW06OjQ1MzkyMTYzMjUzOTpyb290IiwidXNlcm5hbWUiOiJBeWFzaFBNVCJ9.SyJSbYrIC0g4z-DdImqudc1ZQSzx-kEVApme-FHr0WHhKrWJHVtgn0fJi5Fji87MvQFb8HM-oXBqv_l1pbZ_uQD1xMECFAfUzp5MJqOtTU3IXD8YWHeQ_LG8G4jARyLr; aws-userInfo=%7B%22arn%22%3A%22arn%3Aaws%3Aiam%3A%3A453921632539%3Aroot%22%2C%22alias%22%3A%22%22%2C%22username%22%3A%22AyashPMT%22%2C%22keybase%22%3A%22XWoprFJOVgLOLOw%2FVBmT7LbGMjBQSInwEYwt6uUc9wM%5Cu003d%22%2C%22issuer%22%3A%22http%3A%2F%2Fsignin.aws.amazon.com%2Fsignin%22%2C%22signinType%22%3A%22PUBLIC%22%7D; session-id=140-3119798-0790727; session-id-apay=140-3119798-0790727; session-id-time=2082787201l; i18n-prefs=USD; skin=noskin; lc-main=en_US; csm-hit=tb:GVWHP05NVKPWXYHJS781+s-GVWHP05NVKPWXYHJS781|1704659747878&t:1704659747878&adb:adblk_yes; session-token=XwKzwhcALwSUcEAjOAOraT4WgvLKkfX3zqTWw+Yo8RUTuDbKqcAyHUNNHYLmV8pNfgo9XNNhsScZvRKaC3LcYyEE70fmSPfuTJjFjDYPH7ByxKHcvoxkpOqtB3+umRxPNZztPNp8j6TymgZNJpJUP8Y0r0CCfCiLBgiza30gY7V8B9tP4XRtY8y32G2I+evSNqaHY7xjbiHXjb39Uf3Bt4PxLis52cDbicGbMSNMGE9ygV1uivid7OP6ewOe5Ke6qAeI2pAozJcoCOZPaLqtcQzWVFvwxeKIaJ1ZK+RurVBJNhCkjU+SitnLRl3x0pEw1ee9cF3KxrNaJu1ZEcitKGmkL10Ef2lh",
+            "Referer": "https://www.amazon.de",
+            "authority": "www.amazon.de",
             "path": url,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
-                    "application/signed-exchange;v=b3;q=0.7",
+                      "application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate, br",
         }
 
-        full_url = "https://www.amazon.com" + url
-        print(full_url)
+        full_url = "https://www.amazon.de" + url
+        # print(full_url)
         request.headers.update(headers)
         retryBackOff = 1
         response = None
         while not response:
-            index=+ 1
             response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
             if retryBackOff >= 10:
                 break
             time.sleep(retryBackOff)
             retryBackOff = retryBackOff + 1
         print('Response HTTP Status Code: ', response.status_code)
-        return response 
+        index = index + 1
+        print("request_counter:", index)
+        # def replace_counter_value(new_value):
+        #     with open('counter.txt', 'w') as file:
+        #         file.write(str(new_value))
+        # replace_counter_value(index)
+        return response
     
     def extract_ids(data):
         ids = []
@@ -107,49 +99,52 @@ class Product:
 
 
 def get_product_asin(url):
-        try:
-            full_url = "/best-sellers-video-games/zgbs/videogames/ref=zg_bs_nav_videogames_0"
+    try:
+        response = Product.send_request(url)
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Initialize an empty list to store product data
+        products_data = []
+        product_info = None
+        # Iterate over each product div and extract required information
+
+        grid = soup.find('div', {'class': 'p13n-gridRow'})
+        gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
+
+        retryBackOff = 1
+        while len(gridItems) == 0:
             response = Product.send_request(url)
-
             soup = BeautifulSoup(response.content, 'html.parser')
-
-            # Initialize an empty list to store product data
-            products_data = []
-            product_info = None
-            # Iterate over each product div and extract required information
-
             grid = soup.find('div', {'class': 'p13n-gridRow'})
             gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
+            if retryBackOff > 3:
+                break
+            time.sleep(retryBackOff)
+            retryBackOff = retryBackOff + 1
+        ids = []
+        asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
+        ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
+        #print("second page outcome..................")
+        #print(ids)
+        #print(json.loads(asinList.get('data-client-recs-list')))
 
-            retryBackOff = 1
-            while len(gridItems) == 0:
-                response = Product.send_request(full_url)
-                soup = BeautifulSoup(response.content, 'html.parser')
-                grid = soup.find('div', {'class': 'p13n-gridRow'})
-                gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
-                if retryBackOff > 3:
-                    break
-                time.sleep(retryBackOff)
-                retryBackOff = retryBackOff + 1
-            ids = []
+        second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
+        if second_page_link:
+            second_page_url = second_page_link['href']
+            #print(second_page_url)
+            response = Product.send_request(second_page_url)
+            soup = BeautifulSoup(response.content, 'html.parser')
             asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
             ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-            #print("first page outcome..................")
-            #print(ids)
-            #print(json.loads(asinList.get('data-client-recs-list')))
-
-            second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
-            if second_page_link:
-                second_page_url = 'https://www.amazon.com' + second_page_link['href']
-                #print(second_page_url)
-                asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
-                ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-                #print("first and second page outcome..................")
-            #print(ids)
-        except Exception as e:
-            print(f"An unexpected error occurred: {str(e)}")
-            ids = []  # Return default ids if an error occurs
-        return ids
+            #print(second_page_link)
+            print(second_page_url)
+            #print("first and second page outcome..................")
+        print(ids)
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+        ids = []  # Return default ids if an error occurs
+    return ids
 
         # for div in gridItems:
         #     product_info = div.find('div', {'data-asin': True})
@@ -230,16 +225,10 @@ def delete_items_if_false_url():
 
 subcategories = [{
         "name": "Appliances",
-        "link": "/Best-Sellers-Appliances/zgbs/appliances"
+        "link": "/Best-Sellers-Appliances/zgbs/appliances/ref=zg_bs_pg_2_appliances?_encoding=UTF8&amp;pg=2"
     },
-    {
-        "name": "Apps & Games",
-        "link": "/Best-Sellers-Apps-Games/zgbs/mobile-apps"
-    },
-    {
-        "name": "Arts, Crafts & Sewing",
-        "link": "/Best-Sellers-Arts-Crafts-Sewing/zgbs/arts-crafts"
-    },]
+   ]
+
 
 # for subcategory in subcategories:
 #     link = subcategory["link"]
@@ -272,14 +261,86 @@ def get_missing_asin_from_sub_category():
             if "url" in item and ("asins" not in item or not item["asins"]):
                 asins = get_product_asin(item["url"])
                 item["asins"] = asins
-                print(item)
+                #print(item)
         
         with open(file_path, "w") as file:
             json.dump(data, file)
 
-
-
 get_missing_asin_from_sub_category()
+
+def get_asin_missing_item_from_sub_category():
+    file_path = os.path.join(os.path.dirname(__file__), "list.json")
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        missing_asin_items = []
+        for item in data:
+            if "asins" not in item or not item["asins"]:
+                missing_asin_items.append(item)
+        
+        print(json.dumps(missing_asin_items))
+
+#get_asin_missing_item_from_sub_category()
+
+def get_all_unique_asins():
+    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/usa/scripts/list.json"
+    asin_array = []
+
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            if "asins" in item:
+                asin_array.extend(item["asins"])
+
+    unique_asins = list(set(asin_array))
+    return unique_asins
+
+def remove_duplicate_asins():
+    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/usa/scripts/list.json"
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            if "asins" in item:
+                item["asins"] = list(set(item["asins"]))
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+
+def remove_asins_from_list():
+    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            if "asins" in item:
+                item["asins"] = []
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+        
+        print("ASINs removed successfully.")
+    else:
+        print("File not found.")
+
+#remove_asins_from_list()
+
+# unique_asins = get_all_unique_asins()
+# print(f"Number of unique ASINs found: {len(unique_asins)}")
+
+# with open("asin.txt", "w") as file:
+#     for asin in unique_asins:
+#         file.write(asin + "\n")
+
+#get_missing_asin_from_sub_category()
 #print("done")
 # print(products.index)
 #delete_items_if_false_url()
