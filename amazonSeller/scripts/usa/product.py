@@ -158,58 +158,6 @@ def get_product_asin(url):
         ids = []  # Return default ids if an error occurs
     return ids
 
-        # for div in gridItems:
-        #     product_info = div.find('div', {'data-asin': True})
-           
-        #     if product_info:
-        #         asin = product_info['data-asin'].strip()
-
-        #         # Extract product name and URL
-        #         product_link = product_info.find('a', {'class': 'a-link-normal'})
-        #         if product_link and 'href' in product_link.attrs:
-        #             product_url = 'https://www.amazon.com' + product_link['href']
-        #             product_name_tag = product_link.find('span')
-        #             product_name = product_name_tag.get_text(strip=True) if product_name_tag else "No name available"
-                    
-        #             products_data.append({
-        #                 'product_asin': asin,
-        #                 'product_name': product_name,
-        #                 'product_url': product_url
-        #             })
-
-        
-
-        # url = "https://www.amazon.com/acp/p13n-zg-list-grid-desktop/p13n-zg-list-grid-desktop-064724f0-a682-4eec-bfd6-3b403c2ce94d-1699981641551/nextPage?page-type=zeitgeist&stamp=" + time.time()
-
-
-        # # #for second page of best seller
-        # second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
-        # if second_page_link:
-        #     second_page_url = 'https://www.amazon.com' + second_page_link['href']
-        #     print(second_page_url)
-        # #     response = Product.send_request(second_page_url)
-        # #     soup = BeautifulSoup(response.content, 'html.parser')
-        # #     # Iterate over each product div and extract required information
-        # # for div in soup.find_all('div', {'data-asin': True}):
-        # #     asin = div['data-asin'].strip()
-        # #     product_link = div.find('a', {'class': 'a-link-normal'})
-
-        # #     if product_link and 'href' in product_link.attrs:
-        # #         product_name = product_link.get_text(strip=True)
-        # #         product_url = 'https://www.amazon.com' + product_link['href']
-        # #         products_data.append({
-        # #             'product_asin': asin,
-        # #             'product_name': product_name,
-        # #             'product_url': product_url
-        # #         })
-        # # else:
-        # #     second_page_url = None
-        
-
-
-        # # Convert the list of product data to JSON
-        # print(products_data)
-        # return json.dumps(products_data, indent=4)
 def delete_ids_from_list():
     file_path = os.path.join(os.path.dirname(__file__), "list.json")
     
@@ -294,7 +242,7 @@ def get_asin_missing_item_from_sub_category():
         
         print(json.dumps(missing_asin_items))
 
-#get_asin_missing_item_from_sub_category()
+get_asin_missing_item_from_sub_category()
 
 def get_all_unique_asins():
     file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/usa/scripts/list.json"

@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 import json
 import time
 
-AMAZON_BASE_URL = "https://www.amazon.de"
+AMAZON_BASE_URL = "https://www.amazon.com"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
@@ -54,11 +54,12 @@ class Seller:
        
         headers = {
             "user-agent": user,
-            "Cookie": "x-main=4H4PAb9kQtk2wwvWsrYULkO2C1fc3TSisJNgJp4H9kxZPFKG9foI4SD2UGi5iiAo; "
-                    "at-main=Atza"
-                    "|IwEBIP9O0aNybb5YG0xUQD9mk46jqanwHrU_NluV2rRSziiyWBfvVmC2dAZbfY1rRcAWEzrdYGG0LIyR9nJ5XZOOZBpC3fIrAz6iLaNWrVhZ_SiDF0QBLTXfAbbfLYlMLdKCYuB_7_ueRyiuJZWJ5qMU0ENjAsLsLAaZNbv_FhDIAlBdVfcgscdGjbUleDiEZbpEOkVa2OsOQs0Nyvssd_tErxda; sess-at-main=\"aQTU63C+9QPTNmIFQ+jeuMMcPkdu83eO5EmAyUR1NVU=\"; ubid-main=131-3218811-7398132; aws-target-data=%7B%22support%22%3A%221%22%7D; sp-cdn=\"L5Z9:DE\"; aws-ubid-main=458-4182210-1032216; aws-userInfo-signed=eyJ0eXAiOiJKV1MiLCJrZXlSZWdpb24iOiJ1cy1lYXN0LTEiLCJhbGciOiJFUzM4NCIsImtpZCI6ImRiYWRkNTY2LWE4MjEtNGM0NC04MDhhLTFlNzE1MWFlYWM2MCJ9.eyJzdWIiOiIiLCJzaWduaW5UeXBlIjoiUFVCTElDIiwiaXNzIjoiaHR0cDpcL1wvc2lnbmluLmF3cy5hbWF6b24uY29tXC9zaWduaW4iLCJrZXliYXNlIjoiWFdvcHJGSk9WZ0xPTE93XC9WQm1UN0xiR01qQlFTSW53RVl3dDZ1VWM5d009IiwiYXJuIjoiYXJuOmF3czppYW06OjQ1MzkyMTYzMjUzOTpyb290IiwidXNlcm5hbWUiOiJBeWFzaFBNVCJ9.SyJSbYrIC0g4z-DdImqudc1ZQSzx-kEVApme-FHr0WHhKrWJHVtgn0fJi5Fji87MvQFb8HM-oXBqv_l1pbZ_uQD1xMECFAfUzp5MJqOtTU3IXD8YWHeQ_LG8G4jARyLr; aws-userInfo=%7B%22arn%22%3A%22arn%3Aaws%3Aiam%3A%3A453921632539%3Aroot%22%2C%22alias%22%3A%22%22%2C%22username%22%3A%22AyashPMT%22%2C%22keybase%22%3A%22XWoprFJOVgLOLOw%2FVBmT7LbGMjBQSInwEYwt6uUc9wM%5Cu003d%22%2C%22issuer%22%3A%22http%3A%2F%2Fsignin.aws.amazon.com%2Fsignin%22%2C%22signinType%22%3A%22PUBLIC%22%7D; session-id=140-3119798-0790727; session-id-apay=140-3119798-0790727; session-id-time=2082787201l; i18n-prefs=USD; skin=noskin; lc-main=en_US; csm-hit=tb:GVWHP05NVKPWXYHJS781+s-GVWHP05NVKPWXYHJS781|1704659747878&t:1704659747878&adb:adblk_yes; session-token=XwKzwhcALwSUcEAjOAOraT4WgvLKkfX3zqTWw+Yo8RUTuDbKqcAyHUNNHYLmV8pNfgo9XNNhsScZvRKaC3LcYyEE70fmSPfuTJjFjDYPH7ByxKHcvoxkpOqtB3+umRxPNZztPNp8j6TymgZNJpJUP8Y0r0CCfCiLBgiza30gY7V8B9tP4XRtY8y32G2I+evSNqaHY7xjbiHXjb39Uf3Bt4PxLis52cDbicGbMSNMGE9ygV1uivid7OP6ewOe5Ke6qAeI2pAozJcoCOZPaLqtcQzWVFvwxeKIaJ1ZK+RurVBJNhCkjU+SitnLRl3x0pEw1ee9cF3KxrNaJu1ZEcitKGmkL10Ef2lh",
-            "Referer": "https://www.amazon.de",
-            "authority": "www.amazon.de",
+            "Cookie": "uQEO+0qKCQfzI7nHWfd1pdzL2v8lKZmhW0OGIzAUjSH8ZESnSiO2TD58r8IuZ6xw8sJn1ve"
+            "/Ndf/cjciqUYzg5K14tNT1RbavpKNWxmHDYfL7pPp+SkvXMD1qFEF7BaAWWJuypaTFEddGKwl8SgIaqQ/"
+            "iZPcFFHPBfyBAEX507EAWOEUiazCsDG6aAzudHv/Lo+77wvm81x8wrko8nO2xfWP3SCdA8vKM8bP24u9uaKMVD2oxytQuCV+1Ey0TSXiJYFw9UNbfGjxQ8CF2prWanvK42m9N3+SWE2AGcBGwRapLcWhLSoQGiZdGnQYL2qNTFfNlAjI/g6XBvQ8XpMDOtNS/WJxlm7u ",
+
+            "Referer": "https://www.amazon.com",
+            "authority": "www.amazon.com",
             "path": url,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
                     "application/signed-exchange;v=b3;q=0.7",
@@ -162,7 +163,7 @@ def get_product_info_and_seller_id(asin):
         extracted_info['seller_name'] = 'Not Found'
         extracted_info['seller_url'] = 'Not Found'
 
-
+    print("sellerUrl: ", extracted_info['seller_url'])
     seller_info = get_seller_info(extracted_info['seller_url'])
     extracted_info['seller_info'] = seller_info
 
@@ -201,20 +202,15 @@ def get_seller_info(seller_url):
 
     # Parse the HTML content
     soup = BeautifulSoup(response.content, 'html.parser')
-    print()
     # Extract information from the first div (About Seller) a-box-inner a-padding-medium
-#     about_seller_div = soup.find('div', class_='a-column a-span8 a-spacing-none')
-#     about_seller_div = about_seller_div.find('div', class_='a-box-inner a-padding-medium')
-#    #print(about_seller_div)
-#     if about_seller_div:
-#         about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
-#         info['about_seller'] = about_seller_text
-#         extract_info_from_text(about_seller_text, info)
-
+    about_seller_div = soup.find(id = "page-section-about-seller")
+   #print(about_seller_div)
+    if about_seller_div:
+        about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
+        info['about_seller'] = about_seller_text
+        extract_info_from_text(about_seller_text, info)
     # Extract information from the second div (Detailed Seller Information) a-box-inner a-padding-medium
-    #detail_div = soup.find('div', class_='a-column a-span8 a-spacing-none')
-    detailed_info_div = soup.find('id', {'class': 'page-section-detail-seller-info'})
-    #info = soup.find('div', {'class': 'p13n-desktop-grid'})
+    detailed_info_div = soup.find(id = "page-section-detail-seller-info")
 
     print(detailed_info_div)
     if detailed_info_div:
@@ -224,9 +220,12 @@ def get_seller_info(seller_url):
 
     return info
 
+
+
+
 # Example usage
 seller_url = '/sp?ie=UTF8&seller=A3SG0AEGKJK9W3&asin=B0CP8J6KTH&ref_=dp_merchant_link&isAmazonFulfilled=1'
-seller_info = get_seller_info(seller_url)
+seller_info = get_product_info_and_seller_id("B08412TYML")
 print(seller_info)
 
 
