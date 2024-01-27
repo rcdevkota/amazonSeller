@@ -22,4 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('main_category/', views.main_category, name='main_category'),
+    path('/sub_category', views.sub_category,name ='sub-category'),
+    path('/seller_info',views.seller_info,name ='seller_info')
 ]

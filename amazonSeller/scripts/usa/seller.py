@@ -201,17 +201,21 @@ def get_seller_info(seller_url):
 
     # Parse the HTML content
     soup = BeautifulSoup(response.content, 'html.parser')
-
+    print()
     # Extract information from the first div (About Seller) a-box-inner a-padding-medium
-    about_seller_div = soup.find('div', class_='a-column a-span8 a-spacing-none')
-    print(about_seller_div)
-    if about_seller_div:
-        about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
-        info['about_seller'] = about_seller_text
-        extract_info_from_text(about_seller_text, info)
+#     about_seller_div = soup.find('div', class_='a-column a-span8 a-spacing-none')
+#     about_seller_div = about_seller_div.find('div', class_='a-box-inner a-padding-medium')
+#    #print(about_seller_div)
+#     if about_seller_div:
+#         about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
+#         info['about_seller'] = about_seller_text
+#         extract_info_from_text(about_seller_text, info)
 
-    # Extract information from the second div (Detailed Seller Information)
-    detailed_info_div = soup.find('div', class_='a-box-inner a-padding-medium')
+    # Extract information from the second div (Detailed Seller Information) a-box-inner a-padding-medium
+    #detail_div = soup.find('div', class_='a-column a-span8 a-spacing-none')
+    detailed_info_div = soup.find('id', {'class': 'page-section-detail-seller-info'})
+    #info = soup.find('div', {'class': 'p13n-desktop-grid'})
+
     print(detailed_info_div)
     if detailed_info_div:
         detailed_info_text = detailed_info_div.get_text(separator=' ', strip=True)
