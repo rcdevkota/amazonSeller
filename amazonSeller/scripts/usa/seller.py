@@ -1,6 +1,7 @@
 #this script is used to get the seller information from the amazon website
 #It takes ASIN as input and returns the seller information
 
+import os
 import random
 import re
 import requests
@@ -8,6 +9,9 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import json
 import time
+import json
+import json
+import json
 
 AMAZON_BASE_URL = "https://www.amazon.com"
 USER_AGENTS = [
@@ -80,102 +84,94 @@ class Seller:
         print('Response HTTP Status Code: ', response.status_code)
         return response 
     
-
-    def get_seller_info(seller_url):
-        info = {}
-        response = Seller.send_request(seller_url)
-        return info
-        
     
 def get_product_info_and_seller_id(asin):
     extracted_info = {}   
     url = "/dp/" + asin
-    response = Seller.send_request(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    try:
+        response = Seller.send_request(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-    # Extract the product title
-    product_title_tag = soup.find('span', id='productTitle')
-    if product_title_tag:
-        product_name = product_title_tag.get_text(strip=True)
-        extracted_info['product_name'] = product_name
-    else:
-        extracted_info['product_name'] = 'unknown product name'
-    store_name_tag = soup.find('a', id='bylineInfo')
-    # Extract the store name
-    if store_name_tag:
-        store_name = store_name_tag.get_text(strip=True).replace('Visit the ', '').replace(' Store', '')
-        extracted_info['store_name'] = store_name
-    else:
-        extracted_info['store_name'] = 'Store name not found'
-    
-    #  # Find the span with class 'a-size-small offer-display-feature-text-message' h1.a-size-large span.a-size-large
-    # sold_by_name_span = soup.find('span', class_='a-size-small offer-display-feature-text-message')
-
-    # # Proceed only if the span is found
-    # if sold_by_name_span:
-    #     # Find the 'a' tag within the span
-    #     sold_by_name_tag = sold_by_name_span.find('a')
-
-    #     # Extract information if the 'a' tag is found
-    #     if sold_by_name_tag:
-    #         extracted_info['sold_by_name'] = sold_by_name_tag.text.strip()
-    #         extracted_info['sold_by_url'] = 'https://www.amazon.com' + sold_by_name_tag['href']
-    #     else:
-    #         extracted_info['sold_by_name'] = 'Not Available'
-    #         extracted_info['sold_by_url'] = 'Not Available'
-    # else:
-    #     extracted_info['sold_by_name'] = 'Not Found'
-    #     extracted_info['sold_by_url'] = 'Not Found'
-    # extracted_info = {}
-
-    # # Extracting the title
-    # title_tag = soup.select_one('h1.a-size-large span.a-size-large')
-    # extracted_info['title'] = title_tag.text.strip() if title_tag else 'Not Found'
-
-    # # Extracting the number of sellers
-    # number_of_sellers_tag = soup.select_one('div.olp-text-box > span:nth-of-type(1)')
-    # extracted_info['numberOfSellers'] = number_of_sellers_tag.text.strip() if number_of_sellers_tag else 'Not Found'
-
-    # # Extracting the seller link
-    # seller_link_tag = soup.select_one('div.tabular-buybox-text span.a-size-small a')
-    # extracted_info['sellerLink'] = 'https://www.amazon.com' + seller_link_tag['href'] if seller_link_tag else 'Not Found'
-
-    # # Extracting the store name
-    # store_name_tag = soup.select_one('div.centerColAlign div.a-section.a-spacing-none a.a-link-normal')
-    # store_name = store_name_tag.text.strip().replace('Visit the ', '').replace(' Store', '') if store_name_tag else 'Not Found'
-    # extracted_info['storeName'] = store_name
-
-    # # Extracting the alternate seller link
-    # seller_link_alt_tag = soup.select_one('div.a-section div.a-section div.a-section div.offer-display-feature-text span.a-size-small a')
-    # extracted_info['sellerLinkAlt'] = 'https://www.amazon.com' + seller_link_alt_tag['href'] if seller_link_alt_tag else 'Not Found'
-
-    # Extract the seller name and seller URL
-    seller_name_span = soup.find('span', class_='a-size-small offer-display-feature-text-message')
-    if seller_name_span:
-        seller_name_tag = seller_name_span.find('a')
-        if seller_name_tag:
-            extracted_info['seller_name'] = seller_name_tag.text.strip()
-            extracted_info['seller_url'] =  seller_name_tag['href']
+        # Extract the product title
+        product_title_tag = soup.find('span', id='productTitle')
+        if product_title_tag:
+            product_name = product_title_tag.get_text(strip=True)
+            extracted_info['product_name'] = product_name
         else:
-            extracted_info['seller_name'] = 'Not Available'
-            extracted_info['seller_url'] = 'Not Available'
-    else:
-        extracted_info['seller_name'] = 'Not Found'
-        extracted_info['seller_url'] = 'Not Found'
+            extracted_info['product_name'] = 'unknown product name'
+        store_name_tag = soup.find('a', id='bylineInfo')
+        # Extract the store name
+        if store_name_tag:
+            store_name = store_name_tag.get_text(strip=True).replace('Visit the ', '').replace(' Store', '')
+            extracted_info['store_name'] = store_name
+        else:
+            extracted_info['store_name'] = 'unknown'
 
-    print("sellerUrl: ", extracted_info['seller_url'])
-    seller_info = get_seller_info(extracted_info['seller_url'])
-    extracted_info['seller_info'] = seller_info
+        # Extract the seller name and seller URL merchantInfoFeature_feature_div
+        merchent_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
+        #print("merchent_info_div: ", merchent_info_div)
+        #seller_name_span = soup.find('span', class_='a-size-small offer-display-feature-text-message')
+        if merchent_info_div:
+            seller_name_tag = merchent_info_div.find('a')
+           
+            if seller_name_tag:
+                extracted_info['seller_name'] = seller_name_tag.text.strip()
+                extracted_info['seller_id'] =  get_seller_id_from_url(seller_name_tag['href'])
+            else:
+                extracted_info['seller_name'] = 'Not Available'
+                extracted_info['seller_id'] = 'Not Found'
+        else:
+            extracted_info['seller_name'] = 'Not Found'
+            extracted_info['seller_id'] = 'Not Found'
 
-    # Return the extracted information
-    print(extracted_info)
-    return extracted_info
-products = ['B07MCYDD62', 'B08412TYML', 'B00L1G7K50', 'B01BYKEEFQ', 'B0C3L93F2Q', 'B01J3WQ360', 'B01BYKV8FK', 'B0722C491T', 'B08DRS8MNF', 'B00L1G7LBI', 'B000PDFQ6K']
+        if extracted_info['seller_id'] == 'Not Found':
+            #print("no seller id found   ")
+            #print(extracted_info)
+            return extracted_info
+        #print("sellerUrl: ", extracted_info['seller_id'])
+        seller_info = get_seller_info(extracted_info['seller_id'])
+        extracted_info['seller_info'] = seller_info
+        add_info_to_json(asin, extracted_info)
+        # Return the extracted information
+        print(extracted_info)
+        
+        return extracted_info
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        print(extracted_info)
+        return extracted_info
+    #'B07MCYDD62', 'B08412TYML', 'B00L1G7K50', 'B01BYKEEFQ', 'B0C3L93F2Q',
+products = [ "B078GX9R5W",
+            "B08PMP778K",
+            "B098M47N55",
+            "B0BV5PPRFM",
+            "B08L5HKWFX",
+            "B0BKD96YJT",
+            "B08PNQTYV2",
+            "B07RJZMC49",
+            "B095FTDJB6",
+            "B0751N2Y78",
+            "B0BKTMYGTQ",
+            "B08PNP5YGV",
+            "B08B5MYT8T",
+            "B08X1KKVCZ",
+            "B09LP9TM5L"]
 
+def add_info_to_json(asin, extracted_info):
+            data = {}
+            try:
+                with open('info.json', 'r') as file:
+                    data = json.load(file)
+            except FileNotFoundError:
+                pass
 
+            data[asin] = extracted_info
+
+            with open('info.json', 'w') as file:
+                json.dump(data, file)
 def extract_info_from_text(text, info):
     # Search for phone number, email, and address in the given text
-    phone_match = re.search(r'Telefon:\s*([\+0-9\(\) -]+)', text)
+    phone_match = re.search(r'Telephone:\s*([\+0-9\(\) -]+)', text)
     email_match = re.search(r'E-Mail:\s*([\w\.-]+@[\w\.-]+\.\w+)', text)
 
     if phone_match:
@@ -188,6 +184,7 @@ def extract_info_from_text(text, info):
         info['name'] = name_match.group(1).strip()
 
 def get_seller_info(seller_url):
+    
     info = {
         'name': None,
         'email': None,
@@ -196,42 +193,121 @@ def get_seller_info(seller_url):
         'about_seller': None,
         'detailed_seller_info': None
     }
+    url = '/sp?ie=UTF8&seller=' + seller_url
+    print("sellerUrl: ", seller_url)
+    try:
+        # Send a request to the URL
+        response = Seller.send_request(url)
 
-    # Send a request to the URL
-    response = Seller.send_request(seller_url)
-
-    # Parse the HTML content
-    soup = BeautifulSoup(response.content, 'html.parser')
-    # Extract information from the first div (About Seller) a-box-inner a-padding-medium
-    about_seller_div = soup.find(id = "page-section-about-seller")
-   #print(about_seller_div)
-    if about_seller_div:
-        about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
-        info['about_seller'] = about_seller_text
-        extract_info_from_text(about_seller_text, info)
-    # Extract information from the second div (Detailed Seller Information) a-box-inner a-padding-medium
-    detailed_info_div = soup.find(id = "page-section-detail-seller-info")
-
-    print(detailed_info_div)
-    if detailed_info_div:
-        detailed_info_text = detailed_info_div.get_text(separator=' ', strip=True)
-        info['detailed_seller_info'] = detailed_info_text
-        extract_info_from_text(detailed_info_text, info)
+        # Parse the HTML content
+        soup = BeautifulSoup(response.content, 'html.parser')
+        # Extract information from the first div (About Seller) a-box-inner a-padding-medium
+        about_seller_div = soup.find(id="page-section-about-seller")
+        if about_seller_div:
+            about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
+            info['about_seller'] = about_seller_text
+            extract_info_from_text(about_seller_text, info)
+        # Extract information from the second div (Detailed Seller Information) a-box-inner a-padding-medium
+        detailed_info_div = soup.find(id="page-section-detail-seller-info")
+        if detailed_info_div:
+            detailed_info_text = detailed_info_div.get_text(separator=' ', strip=True)
+            info['detailed_seller_info'] = detailed_info_text
+            extract_info_from_text(detailed_info_text, info)
+    except Exception as e:
+        print("An error occurred:", str(e))
 
     return info
 
 
-
+def get_seller_id_from_url(seller_url):
+    # Extract the seller ID from the seller URL
+    try:
+        seller_id = None
+        if seller_url:
+            seller_id_match = re.search(r'seller=([A-Z0-9]+)', seller_url)
+            if seller_id_match:
+                seller_id = seller_id_match.group(1)
+        return seller_id
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return None
 
 # Example usage
-seller_url = '/sp?ie=UTF8&seller=A3SG0AEGKJK9W3&asin=B0CP8J6KTH&ref_=dp_merchant_link&isAmazonFulfilled=1'
-seller_info = get_product_info_and_seller_id("B08412TYML")
-print(seller_info)
+# seller_url = '/sp?ie=UTF8&seller=A3SG0AEGKJK9W3&asin=B0CP8J6KTH'
+# seller_info = get_product_info_and_seller_id("B08412TYML")
+# print(seller_info)
 
-
+#print(get_seller_id_from_url('https://www.amazon.com/gp/help/seller/at-a-glance.html/ref=dp_merchant_link?ie=UTF8&seller=A2J9CB3QL3LKD1&asin=B07RP1YGHD&ref_=dp_merchant_link'))
 # for product in products:
-#     get_product_info_and_seller_id(product)
+#      get_product_info_and_seller_id(product)
+     
 
-
-
+def make_asin_key_empty():
+    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
     
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            asins = item.get("asins")
+            if asins:
+                item["asins"] = {asin: {} for asin in asins}
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+        
+        print("ASINs changed to empty objects")
+
+
+def get_asins_from_json():
+    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            asins = item.get("asins")
+            if asins:
+                for asin, info in asins.items():
+                    if not info:  # Check if the asin has an empty object
+                        try:
+                            seller_info = get_product_info_and_seller_id(asin)
+                            #print("added to json")
+                            asins[asin] = seller_info
+                        except Exception as e:
+                            print(f"An error occurred while getting seller info for ASIN {asin}: {str(e)}")
+
+            with open(file_path, "w") as file:
+                json.dump(data, file)
+        return data
+    except Exception as e:
+        print(f"An error occurred while reading the JSON file: {str(e)}")
+        return None
+
+def remove_duplicate_asins():
+    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        unique_asins = set()
+        for item in data:
+            asins = item.get("asins")
+            if asins:
+                for asin in list(asins.keys()):
+                    if asin in unique_asins:
+                        del asins[asin]
+                    else:
+                        unique_asins.add(asin)
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+        
+        print("Duplicate ASINs removed successfully")
+    except Exception as e:
+        print(f"An error occurred while removing duplicate ASINs: {str(e)}")
+    
+#remove_duplicate_asins()
+
+get_asins_from_json()
