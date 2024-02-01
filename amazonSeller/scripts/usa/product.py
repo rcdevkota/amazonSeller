@@ -5,7 +5,6 @@
 import random
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
 import json
 import os
 import time
@@ -38,19 +37,6 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; ARM; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.15254"
 ]
 request = requests.Session()
-def send_request(url):
-    response = requests.get(
-        url='https://app.scrapingbee.com/api/v1/',
-        params={
-            'api_key': 'H6U4CNF21J3B83L0CZL0RLFM0GE7T9PZ9S6DTUT60EOPL7YZB0YSAHVO3XHM5SB6VAHBFFIZDUKKDN9S',
-            'url': url,
-        },
-
-    )
-    print('Response HTTP Status Code: ', response.status_code)
-    # print('Response HTTP Response Body: ', response.content)
-    return response
-
 class Product:
     """Product class."""
     def __init__(self, value):  # Constructor
@@ -58,10 +44,7 @@ class Product:
     def my_method(self):
         return f"Value is {self.my_attribute}"
     def send_request(url):
-        # try:
-        #     with open('counter.txt', 'r') as file:
-        #         index = int(file.read())
-        # except FileNotFoundError:
+
         index = 0
 
         """Fetch and parse subcategories using requests and BeautifulSoup."""
@@ -71,9 +54,11 @@ class Product:
         #     url = url.split("ref")[0]
         headers = {
             "user-agent": user,
-            "Cookie": "x-main=4H4PAb9kQtk2wwvWsrYULkO2C1fc3TSisJNgJp4H9kxZPFKG9foI4SD2UGi5iiAo; "
-                      "at-main=Atza"
-                      "|IwEBIP9O0aNybb5YG0xUQD9mk46jqanwHrU_NluV2rRSziiyWBfvVmC2dAZbfY1rRcAWEzrdYGG0LIyR9nJ5XZOOZBpC3fIrAz6iLaNWrVhZ_SiDF0QBLTXfAbbfLYlMLdKCYuB_7_ueRyiuJZWJ5qMU0ENjAsLsLAaZNbv_FhDIAlBdVfcgscdGjbUleDiEZbpEOkVa2OsOQs0Nyvssd_tErxda; sess-at-main=\"aQTU63C+9QPTNmIFQ+jeuMMcPkdu83eO5EmAyUR1NVU=\"; ubid-main=131-3218811-7398132; aws-target-data=%7B%22support%22%3A%221%22%7D; sp-cdn=\"L5Z9:DE\"; aws-ubid-main=458-4182210-1032216; aws-userInfo-signed=eyJ0eXAiOiJKV1MiLCJrZXlSZWdpb24iOiJ1cy1lYXN0LTEiLCJhbGciOiJFUzM4NCIsImtpZCI6ImRiYWRkNTY2LWE4MjEtNGM0NC04MDhhLTFlNzE1MWFlYWM2MCJ9.eyJzdWIiOiIiLCJzaWduaW5UeXBlIjoiUFVCTElDIiwiaXNzIjoiaHR0cDpcL1wvc2lnbmluLmF3cy5hbWF6b24uY29tXC9zaWduaW4iLCJrZXliYXNlIjoiWFdvcHJGSk9WZ0xPTE93XC9WQm1UN0xiR01qQlFTSW53RVl3dDZ1VWM5d009IiwiYXJuIjoiYXJuOmF3czppYW06OjQ1MzkyMTYzMjUzOTpyb290IiwidXNlcm5hbWUiOiJBeWFzaFBNVCJ9.SyJSbYrIC0g4z-DdImqudc1ZQSzx-kEVApme-FHr0WHhKrWJHVtgn0fJi5Fji87MvQFb8HM-oXBqv_l1pbZ_uQD1xMECFAfUzp5MJqOtTU3IXD8YWHeQ_LG8G4jARyLr; aws-userInfo=%7B%22arn%22%3A%22arn%3Aaws%3Aiam%3A%3A453921632539%3Aroot%22%2C%22alias%22%3A%22%22%2C%22username%22%3A%22AyashPMT%22%2C%22keybase%22%3A%22XWoprFJOVgLOLOw%2FVBmT7LbGMjBQSInwEYwt6uUc9wM%5Cu003d%22%2C%22issuer%22%3A%22http%3A%2F%2Fsignin.aws.amazon.com%2Fsignin%22%2C%22signinType%22%3A%22PUBLIC%22%7D; session-id=140-3119798-0790727; session-id-apay=140-3119798-0790727; session-id-time=2082787201l; i18n-prefs=USD; skin=noskin; lc-main=en_US; csm-hit=tb:GVWHP05NVKPWXYHJS781+s-GVWHP05NVKPWXYHJS781|1704659747878&t:1704659747878&adb:adblk_yes; session-token=XwKzwhcALwSUcEAjOAOraT4WgvLKkfX3zqTWw+Yo8RUTuDbKqcAyHUNNHYLmV8pNfgo9XNNhsScZvRKaC3LcYyEE70fmSPfuTJjFjDYPH7ByxKHcvoxkpOqtB3+umRxPNZztPNp8j6TymgZNJpJUP8Y0r0CCfCiLBgiza30gY7V8B9tP4XRtY8y32G2I+evSNqaHY7xjbiHXjb39Uf3Bt4PxLis52cDbicGbMSNMGE9ygV1uivid7OP6ewOe5Ke6qAeI2pAozJcoCOZPaLqtcQzWVFvwxeKIaJ1ZK+RurVBJNhCkjU+SitnLRl3x0pEw1ee9cF3KxrNaJu1ZEcitKGmkL10Ef2lh",
+             "Cookie": "uQEO+0qKCQfzI7nHWfd1pdzL2v8lKZmhW0OGIzAUjSH8ZESnSiO2TD58r8IuZ6xw8sJn1ve"
+                         "/Ndf/cjciqUYzg5K14tNT1RbavpKNWxmHDYfL7pPp+SkvXMD1qFEF7BaAWWJuypaTFEddGKwl8SgIaqQ/"
+                         "iZPcFFHPBfyBAEX507EAWOEUiazCsDG6aAzudHv/Lo+77wvm81x8wrko8nO2xfWP3SCdA8vKM8bP24u9uaKMVD2oxytQuCV+1Ey0TSXiJYFw9UNbfGjxQ8CF2prWanvK42m9N3+SWE2AGcBGwRapLcWhLSoQGiZdGnQYL2qNTFfNlAjI/g6XBvQ8XpMDOtNS/WJxlm7u ",
+
+
             "Referer": "https://www.amazon.com",
             "authority": "www.amazon.com",
             "path": url,
@@ -83,23 +68,17 @@ class Product:
         }
 
         full_url = "https://www.amazon.com" + url
-        # print(full_url)
+        print(full_url)
         request.headers.update(headers)
         retryBackOff = 1
         response = None
         while not response:
-            response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
+            response = request.get(full_url, headers=headers, cookies={})
             if retryBackOff >= 10:
                 break
             time.sleep(retryBackOff)
             retryBackOff = retryBackOff + 1
         print('Response HTTP Status Code: ', response.status_code)
-        index = index + 1
-        print("request_counter:", index)
-        # def replace_counter_value(new_value):
-        #     with open('counter.txt', 'w') as file:
-        #         file.write(str(new_value))
-        # replace_counter_value(index)
         return response
     
     def extract_ids(data):
@@ -219,7 +198,7 @@ def get_missing_asin_from_sub_category():
 
         for item in data:
             if "url" in item and ("asins" not in item or not item["asins"]):
-                asins = get_product_asin(item["url"])
+                asins = get_product_asin(item["url"].split("ref")[0])
                 item["asins"] = asins
                 #print(item)
         
@@ -242,7 +221,7 @@ def get_asin_missing_item_from_sub_category():
         
         print(json.dumps(missing_asin_items))
 
-get_asin_missing_item_from_sub_category()
+
 
 def get_all_unique_asins():
     file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/usa/scripts/list.json"
@@ -300,7 +279,6 @@ def remove_asins_from_list():
 #     for asin in unique_asins:
 #         file.write(asin + "\n")
 
-#get_missing_asin_from_sub_category()
 #print("done")
 # print(products.index)
 #delete_items_if_false_url()

@@ -100,23 +100,26 @@ def get_product_info_and_seller_id(asin):
         else:
             extracted_info['product_name'] = 'unknown product name'
         store_name_tag = soup.find('a', id='bylineInfo')
-        # Extract the store name
-        if store_name_tag:
-            store_name = store_name_tag.get_text(strip=True).replace('Visit the ', '').replace(' Store', '')
-            extracted_info['store_name'] = store_name
+        store_name_div = soup.find('div', id='bylineInfo_feature_div')
+        #Extract the store name
+        if store_name_div:
+            store_name_tag = store_name_div.find('a')
+            if store_name_tag:
+                store_name = store_name_tag.get_text(strip=True).replace('Visit the ', '').replace(' Store', '')
+                extracted_info['store_name'] = store_name
+            else:
+                extracted_info['store_name'] = 'unknown'
         else:
             extracted_info['store_name'] = 'unknown'
-
-        # Extract the seller name and seller URL merchantInfoFeature_feature_div
-        merchent_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
-        #print("merchent_info_div: ", merchent_info_div)
-        #seller_name_span = soup.find('span', class_='a-size-small offer-display-feature-text-message')
-        if merchent_info_div:
-            seller_name_tag = merchent_info_div.find('a')
-           
+        print("after name and store name:",extracted_info)
+        # Extract the seller name and seller URL from the main div id
+        merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
+        if merchant_info_div:
+            seller_name_tag = merchant_info_div.find('a')
+            print(seller_name_tag)
             if seller_name_tag:
                 extracted_info['seller_name'] = seller_name_tag.text.strip()
-                extracted_info['seller_id'] =  get_seller_id_from_url(seller_name_tag['href'])
+                extracted_info['seller_id'] = get_seller_id_from_url(seller_name_tag['href'])
             else:
                 extracted_info['seller_name'] = 'Not Available'
                 extracted_info['seller_id'] = 'Not Found'
@@ -125,14 +128,14 @@ def get_product_info_and_seller_id(asin):
             extracted_info['seller_id'] = 'Not Found'
 
         if extracted_info['seller_id'] == 'Not Found':
-            #print("no seller id found   ")
-            #print(extracted_info)
+            print("sellerUrl: ", extracted_info['seller_id'])
             return extracted_info
-        #print("sellerUrl: ", extracted_info['seller_id'])
+
         seller_info = get_seller_info(extracted_info['seller_id'])
         extracted_info['seller_info'] = seller_info
         add_info_to_json(asin, extracted_info)
         # Return the extracted information
+        print("sellerUrl: ", extracted_info['seller_id'])
         print(extracted_info)
         
         return extracted_info
@@ -140,7 +143,7 @@ def get_product_info_and_seller_id(asin):
         print(f"An error occurred: {str(e)}")
         print(extracted_info)
         return extracted_info
-    #'B07MCYDD62', 'B08412TYML', 'B00L1G7K50', 'B01BYKEEFQ', 'B0C3L93F2Q',
+
 products = [ "B078GX9R5W",
             "B08PMP778K",
             "B098M47N55",
@@ -309,5 +312,5 @@ def remove_duplicate_asins():
         print(f"An error occurred while removing duplicate ASINs: {str(e)}")
     
 #remove_duplicate_asins()
-
+#make_asin_key_empty();
 get_asins_from_json()
