@@ -9,9 +9,6 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import json
 import time
-import json
-import json
-import json
 
 AMAZON_BASE_URL = "https://www.amazon.com"
 USER_AGENTS = [
@@ -264,7 +261,8 @@ def make_asin_key_empty():
 
 
 def get_asins_from_json():
-    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "list.json")
     try:
         with open(file_path, "r") as file:
             data = json.load(file)

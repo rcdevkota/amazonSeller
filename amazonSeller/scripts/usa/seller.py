@@ -7,11 +7,9 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-import json
 import time
 import json
-import json
-import json
+
 
 AMAZON_BASE_URL = "https://www.amazon.com"
 USER_AGENTS = [
@@ -58,10 +56,10 @@ class Seller:
        
         headers = {
             "user-agent": user,
-            "Cookie": "uQEO+0qKCQfzI7nHWfd1pdzL2v8lKZmhW0OGIzAUjSH8ZESnSiO2TD58r8IuZ6xw8sJn1ve"
-            "/Ndf/cjciqUYzg5K14tNT1RbavpKNWxmHDYfL7pPp+SkvXMD1qFEF7BaAWWJuypaTFEddGKwl8SgIaqQ/"
-            "iZPcFFHPBfyBAEX507EAWOEUiazCsDG6aAzudHv/Lo+77wvm81x8wrko8nO2xfWP3SCdA8vKM8bP24u9uaKMVD2oxytQuCV+1Ey0TSXiJYFw9UNbfGjxQ8CF2prWanvK42m9N3+SWE2AGcBGwRapLcWhLSoQGiZdGnQYL2qNTFfNlAjI/g6XBvQ8XpMDOtNS/WJxlm7u ",
-
+            "Cookie": "8rShzaMtFiBn4qZUtWPg6Ngo1sf84TCBWPLhCqqbuGwfmFstKRjjI7GyuAYHD1QZsYVXuX2nL"
+            "+WFpTLONMwq4Rf5N1OAAvXKGOOd7EJT+KIx2TK+ePErJBXZEydz/vb36n/9FMuT9DyhmtT3j4OgZQTJFpTvVQYNbU2dXtbW3j7077N10ULoN+AVL89Xo"
+            "+Mi4DT9IPiD5sTVYMftd0XGD+G9/ocQBArPHoqJRuN28R9AyJVbQNzetOjGt0ZRQEzKdLLGMeEKXcSGBLe5tvpw3clZW5zynRw0LwdYvtbcf"
+            "+qMWPPI7HPHvWlWp2zsGAsBv6p87LpdKh4ruT1rK24bUt7b2GqVpEop",
             "Referer": "https://www.amazon.com",
             "authority": "www.amazon.com",
             "path": url,
