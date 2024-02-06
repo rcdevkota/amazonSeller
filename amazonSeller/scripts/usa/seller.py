@@ -111,6 +111,7 @@ def get_product_info_and_seller_id(asin):
             extracted_info['store_name'] = 'unknown'
         print("after name and store name:",extracted_info)
         # Extract the seller name and seller URL from the main div id
+        seller_link_tag = soup.select_one('div.a-section div.a-section div.a-section div.offer-display-feature-text span.a-size-small a')
         merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
         if merchant_info_div:
             seller_name_tag = merchant_info_div.find('a')
@@ -210,6 +211,7 @@ def get_seller_info(seller_url):
             extract_info_from_text(about_seller_text, info)
         # Extract information from the second div (Detailed Seller Information) a-box-inner a-padding-medium
         detailed_info_div = soup.find(id="page-section-detail-seller-info")
+
         if detailed_info_div:
             detailed_info_text = detailed_info_div.get_text(separator=' ', strip=True)
             info['detailed_seller_info'] = detailed_info_text

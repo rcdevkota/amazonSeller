@@ -2,6 +2,7 @@
 *.class
 *.o
 *.pyc
+logs/
 venv/
 # Ignore temporary files
 *~

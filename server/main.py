@@ -55,10 +55,7 @@ class Seller:
        
         headers = {
             "user-agent": user,
-            "Cookie": "uQEO+0qKCQfzI7nHWfd1pdzL2v8lKZmhW0OGIzAUjSH8ZESnSiO2TD58r8IuZ6xw8sJn1ve"
-            "/Ndf/cjciqUYzg5K14tNT1RbavpKNWxmHDYfL7pPp+SkvXMD1qFEF7BaAWWJuypaTFEddGKwl8SgIaqQ/"
-            "iZPcFFHPBfyBAEX507EAWOEUiazCsDG6aAzudHv/Lo+77wvm81x8wrko8nO2xfWP3SCdA8vKM8bP24u9uaKMVD2oxytQuCV+1Ey0TSXiJYFw9UNbfGjxQ8CF2prWanvK42m9N3+SWE2AGcBGwRapLcWhLSoQGiZdGnQYL2qNTFfNlAjI/g6XBvQ8XpMDOtNS/WJxlm7u ",
-
+            "Cookie": "cT0PC/qKX02enBlixhWj+lqjEqFgxIsoUhpnd2siobbjqsgNZTVABrjdS0qzGCLwjrLLEqIEfPkyXKM2PLqCYme+kNOt9aB4yhdQY+dM9hOz/y3+nzqFgnT5AcSY4/hMszN+XCj72/uNWwph7/CG/HADwUsyFzCeMPh+ToD79bG9FQsIu3ZgklRfEASso5TdgoMJ+QL7SEUj8nmNlra+fWS0dBpCs1aR1bfk7aUSXRwOqY/2L9v7p+THJuWhuqFpC8e3rfruJHp6IDL9ZAN5TZiwqIi+Rp0Wht9RpU+rzk7J+FFKJd20nyDQAjZWY5o3q06+q1bAdA9HIHsWuEhJyTlgJPkChNW/",
             "Referer": "https://www.amazon.com",
             "authority": "www.amazon.com",
             "path": url,
@@ -88,7 +85,13 @@ def get_product_info_and_seller_id(asin):
     try:
         response = Seller.send_request(url)
         soup = BeautifulSoup(response.content, 'html.parser')
+        def save_html_file(asin, soup):
+            filename = asin + ".html"
+            with open(filename, "w") as file:
+                file.write(str(soup))
 
+        # Example usage:
+        save_html_file("B078GX9R5W", soup)
         # Extract the product title
         product_title_tag = soup.find('span', id='productTitle')
         if product_title_tag:
@@ -98,6 +101,7 @@ def get_product_info_and_seller_id(asin):
             extracted_info['product_name'] = 'unknown product name'
         store_name_tag = soup.find('a', id='bylineInfo')
         store_name_div = soup.find('div', id='bylineInfo_feature_div')
+      
         #Extract the store name
         if store_name_div:
             store_name_tag = store_name_div.find('a')
@@ -110,30 +114,53 @@ def get_product_info_and_seller_id(asin):
             extracted_info['store_name'] = 'unknown'
         print("after name and store name:",extracted_info)
         # Extract the seller name and seller URL from the main div id
-        merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
-        if merchant_info_div:
-            seller_name_tag = merchant_info_div.find('a')
-            print(seller_name_tag)
-            if seller_name_tag:
-                extracted_info['seller_name'] = seller_name_tag.text.strip()
-                extracted_info['seller_id'] = get_seller_id_from_url(seller_name_tag['href'])
-            else:
-                extracted_info['seller_name'] = 'Not Available'
-                extracted_info['seller_id'] = 'Not Found'
+        # merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
+        # print(merchant_info_div)
+        # print("url:::::::::",merchant_info_div.find('a'))
+        # if merchant_info_div:
+        #     seller_name_tag = merchant_info_div.find('a')
+        #     print(seller_name_tag)
+        #     if seller_name_tag:
+        #         extracted_info['seller_name'] = seller_name_tag.text.strip()
+        #         extracted_info['seller_id'] = get_seller_id_from_url(seller_name_tag['href'])
+        #     else:
+        #         extracted_info['seller_name'] = 'Not Available'
+        #         extracted_info['seller_id'] = 'Not Found'
+        # else:
+        #     extracted_info['seller_name'] = 'Not Found'
+        #     extracted_info['seller_id'] = 'Not Found'
+
+        # if extracted_info['seller_id'] == 'Not Found':
+        #     print("sellerUrl: ", extracted_info['seller_id'])
+        #     return extracted_info
+
+        seller_link_tag = soup.select_one('div.a-section div.a-section div.a-section div.offer-display-feature-text span.a-size-small a')
+        print(seller_link_tag)
+        if seller_link_tag:
+            extracted_info['seller_name'] = seller_link_tag.text.strip()
+            extracted_info['seller_url'] = seller_link_tag['href']
+            # Assuming you have a function `get_seller_id_from_url` to extract seller ID from the URL
+            extracted_info['seller_id'] = get_seller_id_from_url(seller_link_tag['href'])
         else:
-            extracted_info['seller_name'] = 'Not Found'
+            extracted_info['seller_name'] = 'Not Available'
+            extracted_info['seller_url'] = 'Not Found'
             extracted_info['seller_id'] = 'Not Found'
 
         if extracted_info['seller_id'] == 'Not Found':
-            print("sellerUrl: ", extracted_info['seller_id'])
-            return extracted_info
+            print("sellerUrl: ", extracted_info['seller_url'])
+        else:
+            print("Seller Name:", extracted_info['seller_name'])
+            print("Seller URL:", extracted_info['seller_url'])
+            print("Seller ID:", extracted_info['seller_id'])
 
-        seller_info = get_seller_info(extracted_info['seller_id'])
-        extracted_info['seller_info'] = seller_info
+        print("extracted info for seller link::::::::::",extracted_info)
+
+        #seller_info = get_seller_info(extracted_info['seller_id'])
+        #extracted_info['seller_info'] = seller_info
         add_info_to_json(asin, extracted_info)
         # Return the extracted information
-        print("sellerUrl: ", extracted_info['seller_id'])
-        print(extracted_info)
+        #print("sellerUrl: ", extracted_info['seller_id'])
+        #print(extracted_info)
         
         return extracted_info
     except Exception as e:
@@ -141,21 +168,6 @@ def get_product_info_and_seller_id(asin):
         print(extracted_info)
         return extracted_info
 
-products = [ "B078GX9R5W",
-            "B08PMP778K",
-            "B098M47N55",
-            "B0BV5PPRFM",
-            "B08L5HKWFX",
-            "B0BKD96YJT",
-            "B08PNQTYV2",
-            "B07RJZMC49",
-            "B095FTDJB6",
-            "B0751N2Y78",
-            "B0BKTMYGTQ",
-            "B08PNP5YGV",
-            "B08B5MYT8T",
-            "B08X1KKVCZ",
-            "B09LP9TM5L"]
 
 def add_info_to_json(asin, extracted_info):
             data = {}
