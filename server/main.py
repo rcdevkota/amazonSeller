@@ -55,7 +55,7 @@ class Seller:
        
         headers = {
             "user-agent": user,
-            "Cookie": "cT0PC/qKX02enBlixhWj+lqjEqFgxIsoUhpnd2siobbjqsgNZTVABrjdS0qzGCLwjrLLEqIEfPkyXKM2PLqCYme+kNOt9aB4yhdQY+dM9hOz/y3+nzqFgnT5AcSY4/hMszN+XCj72/uNWwph7/CG/HADwUsyFzCeMPh+ToD79bG9FQsIu3ZgklRfEASso5TdgoMJ+QL7SEUj8nmNlra+fWS0dBpCs1aR1bfk7aUSXRwOqY/2L9v7p+THJuWhuqFpC8e3rfruJHp6IDL9ZAN5TZiwqIi+Rp0Wht9RpU+rzk7J+FFKJd20nyDQAjZWY5o3q06+q1bAdA9HIHsWuEhJyTlgJPkChNW/",
+            "Cookie": "cDU9a5E7YzebpFQOHxb2E6U0gO3WFBze/6BRwrQxnV46PSzfAn5SQVr050aGPo/fqTJ3TFhdXv+L68yZv1mL5NiY9hpD7i5k2sNPb39MGZHM38fVUIcqUQ4j9WKHbWuZuw4yejwXixTf25Waa2bfiVff4Jeej5yUyrQJ9JnCHHsATjPEy2LDmGILRvPdWwG9fhGKMqInVW00hUBOrIgyfBxknd5Ib2ehIROngQKcIcqjvdRDfRgRka/E4Z7Xp4u52gs2TY1+4dvIewOJgZro4Aobx/o0BskG6w7FKjHlnf3FP44iWXVfF1LKwTCZ67aV6FyXn6UHHmn3aSFrCoNI0sGQx9V8n2Es",
             "Referer": "https://www.amazon.com",
             "authority": "www.amazon.com",
             "path": url,
@@ -113,26 +113,26 @@ def get_product_info_and_seller_id(asin):
         else:
             extracted_info['store_name'] = 'unknown'
         print("after name and store name:",extracted_info)
-        # Extract the seller name and seller URL from the main div id
-        # merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
-        # print(merchant_info_div)
-        # print("url:::::::::",merchant_info_div.find('a'))
-        # if merchant_info_div:
-        #     seller_name_tag = merchant_info_div.find('a')
-        #     print(seller_name_tag)
-        #     if seller_name_tag:
-        #         extracted_info['seller_name'] = seller_name_tag.text.strip()
-        #         extracted_info['seller_id'] = get_seller_id_from_url(seller_name_tag['href'])
-        #     else:
-        #         extracted_info['seller_name'] = 'Not Available'
-        #         extracted_info['seller_id'] = 'Not Found'
-        # else:
-        #     extracted_info['seller_name'] = 'Not Found'
-        #     extracted_info['seller_id'] = 'Not Found'
+        #Extract the seller name and seller URL from the main div id
+        merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
+        print(merchant_info_div)
+        print("url:::::::::",merchant_info_div.find('a'))
+        if merchant_info_div:
+            seller_name_tag = merchant_info_div.find('a')
+            print(seller_name_tag)
+            if seller_name_tag:
+                extracted_info['seller_name'] = seller_name_tag.text.strip()
+                extracted_info['seller_id'] = get_seller_id_from_url(seller_name_tag['href'])
+            else:
+                extracted_info['seller_name'] = 'Not Available'
+                extracted_info['seller_id'] = 'Not Found'
+        else:
+            extracted_info['seller_name'] = 'Not Found'
+            extracted_info['seller_id'] = 'Not Found'
 
-        # if extracted_info['seller_id'] == 'Not Found':
-        #     print("sellerUrl: ", extracted_info['seller_id'])
-        #     return extracted_info
+        if extracted_info['seller_id'] == 'Not Found':
+            print("sellerUrl: ", extracted_info['seller_id'])
+            return extracted_info
 
         seller_link_tag = soup.select_one('div.a-section div.a-section div.a-section div.offer-display-feature-text span.a-size-small a')
         print(seller_link_tag)
@@ -155,12 +155,12 @@ def get_product_info_and_seller_id(asin):
 
         print("extracted info for seller link::::::::::",extracted_info)
 
-        #seller_info = get_seller_info(extracted_info['seller_id'])
-        #extracted_info['seller_info'] = seller_info
+        seller_info = get_seller_info(extracted_info['seller_id'])
+        extracted_info['seller_info'] = seller_info
         add_info_to_json(asin, extracted_info)
         # Return the extracted information
-        #print("sellerUrl: ", extracted_info['seller_id'])
-        #print(extracted_info)
+        print("sellerUrl: ", extracted_info['seller_id'])
+        print(extracted_info)
         
         return extracted_info
     except Exception as e:
@@ -322,5 +322,5 @@ def remove_duplicate_asins():
         print(f"An error occurred while removing duplicate ASINs: {str(e)}")
     
 #remove_duplicate_asins()
-#make_asin_key_empty();
-get_asins_from_json()
+make_asin_key_empty();
+#get_asins_from_json()

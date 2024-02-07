@@ -51,6 +51,18 @@ class Seller:
         return f"Value is {self.my_attribute}"
     
     def send_request(url):
+        response = requests.get(
+            url='https://app.scrapingbee.com/api/v1/',
+            params={
+                'api_key': 'RVHWA75QSDH3YVIF3GGQ9G8PPS7SY6YCBZN2402YQ7G63638AK3W1Q4TQ00AYQ4JGSNARY4ARNF87EFL',
+                'url': url,
+            },
+        )
+        print('Response HTTP Status Code: ', response.status_code)
+        # print('Response HTTP Response Body: ', response.content)
+        return response
+
+    def send_request_without_proxy(url):
         userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
         user = USER_AGENTS[userAgentIndex]
        
