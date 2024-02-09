@@ -404,7 +404,7 @@ def get_asins_from_json_in_chunks(chunk_size=20):
                     print(f"Failed to write the updated data back to the JSON file during chunk processing: {str(e)}")
 
 
-def process_asins_and_save_in_batches(batch_size=20):
+def process_asins_and_save_in_batches(batch_size=100000):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     asin_file_path = os.path.join(current_dir, "asin.txt")
 
@@ -433,10 +433,14 @@ def process_asins_and_save_in_batches(batch_size=20):
                 except Exception as e:
                     print("10+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                     print(f"An error occurred: {e}")
+                    exception_occured = True
 
         # Clear the result objects to free up memory
         del futures
         gc.collect()
 
+    if exception_occured:
+        print("Some errors occurred while processing ASINs")
+        return
 
 process_asins_and_save_in_batches()
