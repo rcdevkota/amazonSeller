@@ -1,7 +1,5 @@
 #this script is used to get the seller information from the amazon website
 #It takes ASIN as input and returns the seller information
-
-import os
 import random
 import re
 import requests
@@ -9,6 +7,10 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import time
 import json
+import os
+import time
+import concurrent.futures
+
 
 
 AMAZON_BASE_URL = "https://www.amazon.com"
@@ -51,15 +53,17 @@ class Seller:
         return f"Value is {self.my_attribute}"
     
     def send_request(url):
+        full_url= "https://www.amazon.com" + url
+        print(full_url)
         response = requests.get(
             url='https://app.scrapingbee.com/api/v1/',
             params={
                 'api_key': 'RVHWA75QSDH3YVIF3GGQ9G8PPS7SY6YCBZN2402YQ7G63638AK3W1Q4TQ00AYQ4JGSNARY4ARNF87EFL',
-                'url': url,
+                'url': full_url,
             },
         )
         print('Response HTTP Status Code: ', response.status_code)
-        # print('Response HTTP Response Body: ', response.content)
+        #print('Response HTTP Response Body: ', response.content)
         return response
 
     def send_request_without_proxy(url):
@@ -121,13 +125,13 @@ def get_product_info_and_seller_id(asin):
                 extracted_info['store_name'] = 'unknown'
         else:
             extracted_info['store_name'] = 'unknown'
-        print("after name and store name:",extracted_info)
+
+
         # Extract the seller name and seller URL from the main div id
-        seller_link_tag = soup.select_one('div.a-section div.a-section div.a-section div.offer-display-feature-text span.a-size-small a')
         merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
         if merchant_info_div:
             seller_name_tag = merchant_info_div.find('a')
-            print(seller_name_tag)
+            #print(seller_name_tag)
             if seller_name_tag:
                 extracted_info['seller_name'] = seller_name_tag.text.strip()
                 extracted_info['seller_id'] = get_seller_id_from_url(seller_name_tag['href'])
@@ -145,31 +149,19 @@ def get_product_info_and_seller_id(asin):
         seller_info = get_seller_info(extracted_info['seller_id'])
         extracted_info['seller_info'] = seller_info
         add_info_to_json(asin, extracted_info)
-        # Return the extracted information
-        print("sellerUrl: ", extracted_info['seller_id'])
+
+        print("****************************************************************************************************************")
+        print(asin)
         print(extracted_info)
         
         return extracted_info
     except Exception as e:
         print(f"An error occurred: {str(e)}")
+        print("****************************************************************************************************************")
+        print(asin)
         print(extracted_info)
+        add_info_to_json(asin, extracted_info)
         return extracted_info
-
-products = [ "B078GX9R5W",
-            "B08PMP778K",
-            "B098M47N55",
-            "B0BV5PPRFM",
-            "B08L5HKWFX",
-            "B0BKD96YJT",
-            "B08PNQTYV2",
-            "B07RJZMC49",
-            "B095FTDJB6",
-            "B0751N2Y78",
-            "B0BKTMYGTQ",
-            "B08PNP5YGV",
-            "B08B5MYT8T",
-            "B08X1KKVCZ",
-            "B09LP9TM5L"]
 
 def add_info_to_json(asin, extracted_info):
             data = {}
@@ -192,10 +184,14 @@ def extract_info_from_text(text, info):
         info['phone_number'] = phone_match.group(1)
     if email_match:
         info['email'] = email_match.group(1)
-    # Assuming the business name is in the format: "Inh. [Name]"
-    name_match = re.search(r'Inh.\s*([^&]+)', text)
+    # Extract business name
+    name_match = re.search(r'Business Name:\s*([^<]+)', text)
     if name_match:
         info['name'] = name_match.group(1).strip()
+    # Extract business address
+    address_match = re.findall(r'Business Address:\s*([^<]+)', text)
+    if address_match:
+        info['address'] = ', '.join(address_match).strip()
 
 def get_seller_info(seller_url):
     
@@ -217,12 +213,15 @@ def get_seller_info(seller_url):
         soup = BeautifulSoup(response.content, 'html.parser')
         # Extract information from the first div (About Seller) a-box-inner a-padding-medium
         about_seller_div = soup.find(id="page-section-about-seller")
+        #print(about_seller_div)
         if about_seller_div:
             about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
             info['about_seller'] = about_seller_text
             extract_info_from_text(about_seller_text, info)
         # Extract information from the second div (Detailed Seller Information) a-box-inner a-padding-medium
         detailed_info_div = soup.find(id="page-section-detail-seller-info")
+        #print(detailed_info_div)
+        print("****************************************************************************************************************")
 
         if detailed_info_div:
             detailed_info_text = detailed_info_div.get_text(separator=' ', strip=True)
@@ -247,36 +246,11 @@ def get_seller_id_from_url(seller_url):
         print(f"An error occurred: {str(e)}")
         return None
 
-# Example usage
-# seller_url = '/sp?ie=UTF8&seller=A3SG0AEGKJK9W3&asin=B0CP8J6KTH'
-# seller_info = get_product_info_and_seller_id("B08412TYML")
-# print(seller_info)
-
-#print(get_seller_id_from_url('https://www.amazon.com/gp/help/seller/at-a-glance.html/ref=dp_merchant_link?ie=UTF8&seller=A2J9CB3QL3LKD1&asin=B07RP1YGHD&ref_=dp_merchant_link'))
-# for product in products:
-#      get_product_info_and_seller_id(product)
-     
-
-def make_asin_key_empty():
-    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
-    
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        for item in data:
-            asins = item.get("asins")
-            if asins:
-                item["asins"] = {asin: {} for asin in asins}
-
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-        
-        print("ASINs changed to empty objects")
 
 
 def get_asins_from_json():
-    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "list.json")
     try:
         with open(file_path, "r") as file:
             data = json.load(file)
@@ -300,8 +274,59 @@ def get_asins_from_json():
         print(f"An error occurred while reading the JSON file: {str(e)}")
         return None
 
+
+def process_asin_batch(asins, asin_to_data_map, timeout=20):
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_asin = {executor.submit(get_product_info_and_seller_id, asin): asin for asin in asins}
+            for future in concurrent.futures.as_completed(future_to_asin, timeout=timeout):
+                asin = future_to_asin[future]
+                try:
+                    info = future.result(timeout=timeout)  # Set a timeout for getting the result
+                    if asin in asin_to_data_map:
+                        asin_to_data_map[asin]['asins'][asin] = info
+                except concurrent.futures.TimeoutError:
+                    print(f"Fetching data for ASIN {asin} timed out")
+                except Exception as e:
+                    print(f"Failed to fetch data for ASIN {asin}: {str(e)}")
+    except Exception as e:
+        print(f"An error occurred while processing ASIN batch: {str(e)}")
+
+def get_asins_from_json_concruently(batch_size=10, timeout=20):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "list.json")
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+    except Exception as e:
+        print(f"Failed to read the JSON file: {str(e)}")
+        return
+
+    asins_to_fetch = []
+    asin_to_data_map = {}
+
+    for item in data:
+        if isinstance(item.get('asins'), dict):
+            for asin, info in item['asins'].items():
+                if not info:  # Ensure to fetch only if info is empty
+                    asins_to_fetch.append(asin)
+                    asin_to_data_map[asin] = item
+
+    # Process in batches
+    for i in range(0, len(asins_to_fetch), batch_size):
+        batch_asins = asins_to_fetch[i:i+batch_size]
+        try:
+            process_asin_batch(batch_asins, asin_to_data_map, timeout=timeout)
+            # Checkpoint: Save progress after each batch
+            with open(file_path, "w") as file:
+                json.dump(data, file, indent=4)
+            print(f"Checkpoint: Successfully updated the JSON file for batch starting with ASIN {batch_asins[0]}")
+        except Exception as e:
+            print(f"An error occurred while processing batch starting with ASIN {batch_asins[0]}: {str(e)}")
+
 def remove_duplicate_asins():
-    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "list.json")
     try:
         with open(file_path, "r") as file:
             data = json.load(file)
@@ -322,7 +347,68 @@ def remove_duplicate_asins():
         print("Duplicate ASINs removed successfully")
     except Exception as e:
         print(f"An error occurred while removing duplicate ASINs: {str(e)}")
+
+        
+def make_asin_key_empty():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "test.json")
     
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            asins = item.get("asins")
+            if asins:
+                item["asins"] = {asin: {} for asin in asins}
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+        
+        print("ASINs changed to empty objects")
+    
+def get_asins_from_json_in_chunks(chunk_size=20):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "test.json")
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+    except Exception as e:
+        print(f"Failed to read the JSON file: {str(e)}")
+        return None
+
+    # Function to process a single ASIN and return the updated info
+    def process_asin(asin):
+        try:
+            seller_info = get_product_info_and_seller_id(asin)
+            return asin, seller_info
+        except Exception as e:
+            print(f"An error occurred while getting seller info for ASIN {asin}: {str(e)}")
+            return asin, None
+
+    # Iterate over items and process ASINs
+    for item in data:
+        if 'asins' in item and isinstance(item['asins'], dict):
+            all_asins = list(item['asins'].keys())
+            for i in range(0, len(all_asins), chunk_size):
+                chunk_asins = all_asins[i:i+chunk_size]
+                for asin in chunk_asins:
+                    if not item['asins'][asin]:  # If the ASIN info is empty
+                        asin, seller_info = process_asin(asin)
+                        item['asins'][asin] = seller_info  # Update the info
+                # Checkpoint: Save progress after each chunk
+                try:
+                    with open(file_path, "w") as file:
+                        json.dump(data, file, indent=4)
+                    print(f"Checkpoint: Successfully updated the JSON file for chunk up to ASIN {chunk_asins[-1]}")
+                except Exception as e:
+                    print(f"Failed to write the updated data back to the JSON file during chunk processing: {str(e)}")
+
+
 #remove_duplicate_asins()
 #make_asin_key_empty();
 get_asins_from_json()
+
+#get_asins_from_json_concruently()
+#get_asins_from_json_in_chunks()
+#get_product_info_and_seller_id("B098JTDPQC")

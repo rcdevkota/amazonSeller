@@ -269,16 +269,3 @@ def remove_asins_from_list():
         print("ASINs removed successfully.")
     else:
         print("File not found.")
-
-#remove_asins_from_list()
-
-# unique_asins = get_all_unique_asins()
-# print(f"Number of unique ASINs found: {len(unique_asins)}")
-
-# with open("asin.txt", "w") as file:
-#     for asin in unique_asins:
-#         file.write(asin + "\n")
-
-#print("done")
-# print(products.index)
-#delete_items_if_false_url()
