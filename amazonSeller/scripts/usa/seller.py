@@ -144,36 +144,26 @@ async def get_product_info_and_seller_id(asin):
         if extracted_info['seller_id'] == 'Not Found':
             print("********************************************No seller ID found in Product page********************************************************************")
             print(asin,extracted_info)
-            add_info_to_json(asin, extracted_info)
+            add_info_to_txt(asin, extracted_info)
             return extracted_info
 
         seller_info = get_seller_info(extracted_info['seller_id'])
         extracted_info['seller_info'] = seller_info
-        add_info_to_json(asin, extracted_info)
-
         print("***********************************************SellerID found in Product Page*****************************************************************")
         print(asin,extracted_info)
-        add_info_to_json(asin, extracted_info)
+        add_info_to_txt(asin, extracted_info)
         return extracted_info
     except Exception as e:
         print("****************************************************************************************************************")
         print(f"An error occurred: {str(e)}")
         print(asin,extracted_info)
-        add_info_to_json(asin, extracted_info)
+        add_info_to_txt(asin, extracted_info)
         return extracted_info
 
-def add_info_to_json(asin, extracted_info):
-            data = {}
-            try:
-                with open('info.json', 'r') as file:
-                    data = json.load(file)
-            except FileNotFoundError:
-                pass
+async def add_info_to_txt(asin, extracted_info):
+    with open('info.txt', 'a') as file:
+        file.write(f'"{asin}" = {extracted_info},\n')
 
-            data[asin] = extracted_info
-
-            with open('info.json', 'w') as file:
-                json.dump(data, file)
 def extract_info_from_text(text, info):
     # Search for phone number, email, and address in the given text
     phone_match = re.search(r'Telephone:\s*([\+0-9\(\) -]+)', text)
