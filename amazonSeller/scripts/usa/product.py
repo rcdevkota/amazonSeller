@@ -220,7 +220,7 @@ def get_asin_missing_item_from_sub_category():
 
 def get_all_unique_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
+    file_path = os.path.join(current_dir, "list.json")
     asin_array = []
 
     if os.path.exists(file_path):
