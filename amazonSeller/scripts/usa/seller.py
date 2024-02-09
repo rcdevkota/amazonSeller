@@ -8,9 +8,7 @@ from urllib.parse import urljoin
 import time
 import json
 import os
-import time
 import concurrent.futures
-
 
 
 AMAZON_BASE_URL = "https://www.amazon.com"
@@ -53,6 +51,7 @@ class Seller:
         return f"Value is {self.my_attribute}"
     
     def send_request(url):
+        print("+++++++++++++++++++++++++++++++++Sending request+++++++++++++++++++++++++++++++++")
         full_url= "https://www.amazon.com" + url
         print(full_url)
         response = requests.get(
@@ -66,37 +65,37 @@ class Seller:
         #print('Response HTTP Response Body: ', response.content)
         return response
 
-    def send_request_without_proxy(url):
-        userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
-        user = USER_AGENTS[userAgentIndex]
+    # def send_request_without_proxy(url):
+    #     userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
+    #     user = USER_AGENTS[userAgentIndex]
        
-        headers = {
-            "user-agent": user,
-            "Cookie": "8rShzaMtFiBn4qZUtWPg6Ngo1sf84TCBWPLhCqqbuGwfmFstKRjjI7GyuAYHD1QZsYVXuX2nL"
-            "+WFpTLONMwq4Rf5N1OAAvXKGOOd7EJT+KIx2TK+ePErJBXZEydz/vb36n/9FMuT9DyhmtT3j4OgZQTJFpTvVQYNbU2dXtbW3j7077N10ULoN+AVL89Xo"
-            "+Mi4DT9IPiD5sTVYMftd0XGD+G9/ocQBArPHoqJRuN28R9AyJVbQNzetOjGt0ZRQEzKdLLGMeEKXcSGBLe5tvpw3clZW5zynRw0LwdYvtbcf"
-            "+qMWPPI7HPHvWlWp2zsGAsBv6p87LpdKh4ruT1rK24bUt7b2GqVpEop",
-            "Referer": "https://www.amazon.com",
-            "authority": "www.amazon.com",
-            "path": url,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
-                    "application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-        }
+    #     headers = {
+    #         "user-agent": user,
+    #         "Cookie": "8rShzaMtFiBn4qZUtWPg6Ngo1sf84TCBWPLhCqqbuGwfmFstKRjjI7GyuAYHD1QZsYVXuX2nL"
+    #         "+WFpTLONMwq4Rf5N1OAAvXKGOOd7EJT+KIx2TK+ePErJBXZEydz/vb36n/9FMuT9DyhmtT3j4OgZQTJFpTvVQYNbU2dXtbW3j7077N10ULoN+AVL89Xo"
+    #         "+Mi4DT9IPiD5sTVYMftd0XGD+G9/ocQBArPHoqJRuN28R9AyJVbQNzetOjGt0ZRQEzKdLLGMeEKXcSGBLe5tvpw3clZW5zynRw0LwdYvtbcf"
+    #         "+qMWPPI7HPHvWlWp2zsGAsBv6p87LpdKh4ruT1rK24bUt7b2GqVpEop",
+    #         "Referer": "https://www.amazon.com",
+    #         "authority": "www.amazon.com",
+    #         "path": url,
+    #         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
+    #                 "application/signed-exchange;v=b3;q=0.7",
+    #         "Accept-Encoding": "gzip, deflate, br",
+    #     }
 
-        full_url = AMAZON_BASE_URL + url
-        print(full_url)
-        request.headers.update(headers)
-        retryBackOff = 1
-        response = None
-        while not response:
-            response = request.get(full_url, headers=headers, cookies={}) 
-            if retryBackOff >= 10:
-                break
-            time.sleep(retryBackOff)
-            retryBackOff = retryBackOff + 1
-        print('Response HTTP Status Code: ', response.status_code)
-        return response 
+    #     full_url = AMAZON_BASE_URL + url
+    #     print(full_url)
+    #     request.headers.update(headers)
+    #     retryBackOff = 1
+    #     response = None
+    #     while not response:
+    #         response = request.get(full_url, headers=headers, cookies={}) 
+    #         if retryBackOff >= 10:
+    #             break
+    #         time.sleep(retryBackOff)
+    #         retryBackOff = retryBackOff + 1
+    #     print('Response HTTP Status Code: ', response.status_code)
+    #     return response 
     
     
 def get_product_info_and_seller_id(asin):
@@ -275,140 +274,167 @@ def get_asins_from_json():
         return None
 
 
-def process_asin_batch(asins, asin_to_data_map, timeout=20):
-    try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            future_to_asin = {executor.submit(get_product_info_and_seller_id, asin): asin for asin in asins}
-            for future in concurrent.futures.as_completed(future_to_asin, timeout=timeout):
-                asin = future_to_asin[future]
-                try:
-                    info = future.result(timeout=timeout)  # Set a timeout for getting the result
-                    if asin in asin_to_data_map:
-                        asin_to_data_map[asin]['asins'][asin] = info
-                except concurrent.futures.TimeoutError:
-                    print(f"Fetching data for ASIN {asin} timed out")
-                except Exception as e:
-                    print(f"Failed to fetch data for ASIN {asin}: {str(e)}")
-    except Exception as e:
-        print(f"An error occurred while processing ASIN batch: {str(e)}")
+# def process_asin_batch(asins, asin_to_data_map, timeout=20):
+#     try:
+#         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+#             future_to_asin = {executor.submit(get_product_info_and_seller_id, asin): asin for asin in asins}
+#             for future in concurrent.futures.as_completed(future_to_asin, timeout=timeout):
+#                 asin = future_to_asin[future]
+#                 try:
+#                     info = future.result(timeout=timeout)  # Set a timeout for getting the result
+#                     if asin in asin_to_data_map:
+#                         asin_to_data_map[asin]['asins'][asin] = info
+#                 except concurrent.futures.TimeoutError:
+#                     print(f"Fetching data for ASIN {asin} timed out")
+#                 except Exception as e:
+#                     print(f"Failed to fetch data for ASIN {asin}: {str(e)}")
+#     except Exception as e:
+#         print(f"An error occurred while processing ASIN batch: {str(e)}")
 
-def get_asins_from_json_concruently(batch_size=10, timeout=20):
+# def get_asins_from_json_concruently(batch_size=10, timeout=20):
+#     current_dir = os.path.dirname(os.path.abspath(__file__))
+#     file_path = os.path.join(current_dir, "list.json")
+#     try:
+#         with open(file_path, "r") as file:
+#             data = json.load(file)
+#     except Exception as e:
+#         print(f"Failed to read the JSON file: {str(e)}")
+#         return
+
+#     asins_to_fetch = []
+#     asin_to_data_map = {}
+
+#     for item in data:
+#         if isinstance(item.get('asins'), dict):
+#             for asin, info in item['asins'].items():
+#                 if not info:  # Ensure to fetch only if info is empty
+#                     asins_to_fetch.append(asin)
+#                     asin_to_data_map[asin] = item
+
+#     # Process in batches
+#     for i in range(0, len(asins_to_fetch), batch_size):
+#         batch_asins = asins_to_fetch[i:i+batch_size]
+#         try:
+#             process_asin_batch(batch_asins, asin_to_data_map, timeout=timeout)
+#             # Checkpoint: Save progress after each batch
+#             with open(file_path, "w") as file:
+#                 json.dump(data, file, indent=4)
+#             print(f"Checkpoint: Successfully updated the JSON file for batch starting with ASIN {batch_asins[0]}")
+#         except Exception as e:
+#             print(f"An error occurred while processing batch starting with ASIN {batch_asins[0]}: {str(e)}")
+
+# def remove_duplicate_asins():
+#     current_dir = os.path.dirname(os.path.abspath(__file__))
+#     file_path = os.path.join(current_dir, "list.json")
+#     try:
+#         with open(file_path, "r") as file:
+#             data = json.load(file)
+
+#         unique_asins = set()
+#         for item in data:
+#             asins = item.get("asins")
+#             if asins:
+#                 for asin in list(asins.keys()):
+#                     if asin in unique_asins:
+#                         del asins[asin]
+#                     else:
+#                         unique_asins.add(asin)
+
+#         with open(file_path, "w") as file:
+#             json.dump(data, file)
+        
+#         print("Duplicate ASINs removed successfully")
+#     except Exception as e:
+#         print(f"An error occurred while removing duplicate ASINs: {str(e)}")
+
+        
+# def make_asin_key_empty():
+#     current_dir = os.path.dirname(os.path.abspath(__file__))
+#     file_path = os.path.join(current_dir, "test.json")
+    
+#     if os.path.exists(file_path):
+#         with open(file_path, "r") as file:
+#             data = json.load(file)
+
+#         for item in data:
+#             asins = item.get("asins")
+#             if asins:
+#                 item["asins"] = {asin: {} for asin in asins}
+
+#         with open(file_path, "w") as file:
+#             json.dump(data, file)
+        
+#         print("ASINs changed to empty objects")
+    
+# def get_asins_from_json_in_chunks(chunk_size=20):
+#     current_dir = os.path.dirname(os.path.abspath(__file__))
+#     file_path = os.path.join(current_dir, "test.json")
+#     try:
+#         with open(file_path, "r") as file:
+#             data = json.load(file)
+#     except Exception as e:
+#         print(f"Failed to read the JSON file: {str(e)}")
+#         return None
+
+#     # Function to process a single ASIN and return the updated info
+#     def process_asin(asin):
+#         try:
+#             seller_info = get_product_info_and_seller_id(asin)
+#             return asin, seller_info
+#         except Exception as e:
+#             print(f"An error occurred while getting seller info for ASIN {asin}: {str(e)}")
+#             return asin, None
+
+#     # Iterate over items and process ASINs
+#     for item in data:
+#         if 'asins' in item and isinstance(item['asins'], dict):
+#             all_asins = list(item['asins'].keys())
+#             for i in range(0, len(all_asins), chunk_size):
+#                 chunk_asins = all_asins[i:i+chunk_size]
+#                 for asin in chunk_asins:
+#                     if not item['asins'][asin]:  # If the ASIN info is empty
+#                         asin, seller_info = process_asin(asin)
+#                         item['asins'][asin] = seller_info  # Update the info
+#                 # Checkpoint: Save progress after each chunk
+#                 try:
+#                     with open(file_path, "w") as file:
+#                         json.dump(data, file, indent=4)
+#                     print(f"Checkpoint: Successfully updated the JSON file for chunk up to ASIN {chunk_asins[-1]}")
+#                 except Exception as e:
+#                     print(f"Failed to write the updated data back to the JSON file during chunk processing: {str(e)}")
+
+
+def process_asins_and_save_in_batches(batch_size=20):
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "list.json")
+    asin_file_path = os.path.join(current_dir, "asin.txt")
+    output_file_path = os.path.join(current_dir, "infoOutput.txt")
+    #asins = ['B07DP4Y6FH', 'B09S6VM2G2', 'B0BV7H39KT', 'B09BG8Q3SD', 'B096BN9JFR', 'B079ZPLL97', 'B0B2DCQ24T', 'B086JQQHPK', 'B0BV7HM4SK', 'B0B728HRFL', 'B00000DMER', 'B01MTMWYES', 'B07Y5P1YHR', 'B087Q6NV9V', 'B08S5TJHH5', 'B09YK7TFX8', 'B08LDHJ38P', 'B08HN2V7GY', 'B074C3SG6V', 'B08VV8LWKB', 'B07T29461V', 'B077XRL55P', 'B07YZV3HW9', 'B01EWOE0UU', 'B09RGKKZQR', 'B093HBBMPT', 'B01HSIIFQ2', 'B0BSNZLNHH', 'B07H185K6H', 'B08LDGHNXR']
+
+    # Read ASINs from the provided text file
     try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
+        with open(asin_file_path, "r") as file:
+            asins = [line.strip() for line in file.readlines()]
     except Exception as e:
-        print(f"Failed to read the JSON file: {str(e)}")
+        print(f"Error reading the ASIN file: {e}")
         return
 
-    asins_to_fetch = []
-    asin_to_data_map = {}
+    # Clear the output file to ensure fresh start
+    with open(output_file_path, 'w') as f:
+        f.write('')
 
-    for item in data:
-        if isinstance(item.get('asins'), dict):
-            for asin, info in item['asins'].items():
-                if not info:  # Ensure to fetch only if info is empty
-                    asins_to_fetch.append(asin)
-                    asin_to_data_map[asin] = item
+    # Process ASINs in batches
+    for i in range(0, len(asins), batch_size):
+        current_batch = asins[i:i + batch_size]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+            futures = [executor.submit(get_product_info_and_seller_id, asin) for asin in current_batch]
 
-    # Process in batches
-    for i in range(0, len(asins_to_fetch), batch_size):
-        batch_asins = asins_to_fetch[i:i+batch_size]
-        try:
-            process_asin_batch(batch_asins, asin_to_data_map, timeout=timeout)
-            # Checkpoint: Save progress after each batch
-            with open(file_path, "w") as file:
-                json.dump(data, file, indent=4)
-            print(f"Checkpoint: Successfully updated the JSON file for batch starting with ASIN {batch_asins[0]}")
-        except Exception as e:
-            print(f"An error occurred while processing batch starting with ASIN {batch_asins[0]}: {str(e)}")
-
-def remove_duplicate_asins():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "list.json")
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        unique_asins = set()
-        for item in data:
-            asins = item.get("asins")
-            if asins:
-                for asin in list(asins.keys()):
-                    if asin in unique_asins:
-                        del asins[asin]
-                    else:
-                        unique_asins.add(asin)
-
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-        
-        print("Duplicate ASINs removed successfully")
-    except Exception as e:
-        print(f"An error occurred while removing duplicate ASINs: {str(e)}")
-
-        
-def make_asin_key_empty():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
-    
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        for item in data:
-            asins = item.get("asins")
-            if asins:
-                item["asins"] = {asin: {} for asin in asins}
-
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-        
-        print("ASINs changed to empty objects")
-    
-def get_asins_from_json_in_chunks(chunk_size=20):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-    except Exception as e:
-        print(f"Failed to read the JSON file: {str(e)}")
-        return None
-
-    # Function to process a single ASIN and return the updated info
-    def process_asin(asin):
-        try:
-            seller_info = get_product_info_and_seller_id(asin)
-            return asin, seller_info
-        except Exception as e:
-            print(f"An error occurred while getting seller info for ASIN {asin}: {str(e)}")
-            return asin, None
-
-    # Iterate over items and process ASINs
-    for item in data:
-        if 'asins' in item and isinstance(item['asins'], dict):
-            all_asins = list(item['asins'].keys())
-            for i in range(0, len(all_asins), chunk_size):
-                chunk_asins = all_asins[i:i+chunk_size]
-                for asin in chunk_asins:
-                    if not item['asins'][asin]:  # If the ASIN info is empty
-                        asin, seller_info = process_asin(asin)
-                        item['asins'][asin] = seller_info  # Update the info
-                # Checkpoint: Save progress after each chunk
+            for future in concurrent.futures.as_completed(futures):
                 try:
-                    with open(file_path, "w") as file:
-                        json.dump(data, file, indent=4)
-                    print(f"Checkpoint: Successfully updated the JSON file for chunk up to ASIN {chunk_asins[-1]}")
+                    asin, seller_info = future.result()
+                    with open(output_file_path, "a") as output_file:
+                        output_file.write(json.dumps(seller_info) + "\n")
+                    print(f"Processed and saved ASIN {asin}")
                 except Exception as e:
-                    print(f"Failed to write the updated data back to the JSON file during chunk processing: {str(e)}")
+                    print(f"An error occurred: {e}")
 
-
-#remove_duplicate_asins()
-#make_asin_key_empty();
-get_asins_from_json()
-
-#get_asins_from_json_concruently()
-#get_asins_from_json_in_chunks()
-#get_product_info_and_seller_id("B098JTDPQC")
+process_asins_and_save_in_batches()

@@ -169,10 +169,6 @@ subcategories = [{
    ]
 
 
-# for subcategory in subcategories:
-#     link = subcategory["link"]
-#     print(get_product_asin(link))
-
 def getall_asin_from_sub_category():
     file_path = os.path.join(os.path.dirname(__file__), "list.json")
     
@@ -205,7 +201,6 @@ def get_missing_asin_from_sub_category():
         with open(file_path, "w") as file:
             json.dump(data, file)
 
-get_missing_asin_from_sub_category()
 
 def get_asin_missing_item_from_sub_category():
     file_path = os.path.join(os.path.dirname(__file__), "list.json")
@@ -224,7 +219,8 @@ def get_asin_missing_item_from_sub_category():
 
 
 def get_all_unique_asins():
-    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/usa/scripts/list.json"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "test.json")
     asin_array = []
 
     if os.path.exists(file_path):
@@ -233,13 +229,24 @@ def get_all_unique_asins():
 
         for item in data:
             if "asins" in item:
-                asin_array.extend(item["asins"])
+                if isinstance(item["asins"], dict):
+                    asin_array.extend(item["asins"].keys())
+                elif isinstance(item["asins"], list):
+                    asin_array.extend(item["asins"])
 
     unique_asins = list(set(asin_array))
+
+    # Create asin.txt file and write unique ASINs
+    asin_file_path = os.path.join(current_dir, "asin.txt")
+    with open(asin_file_path, "w") as asin_file:
+        for asin in unique_asins:
+            asin_file.write(asin + "\n")
+
     return unique_asins
 
 def remove_duplicate_asins():
-    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/usa/scripts/list.json"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "test.json")
     
     if os.path.exists(file_path):
         with open(file_path, "r") as file:
@@ -253,7 +260,8 @@ def remove_duplicate_asins():
             json.dump(data, file)
 
 def remove_asins_from_list():
-    file_path = "/Users/rcd/Documents/GitHub/prufengel/amazonSeller/amazonSeller/scripts/usa/list.json"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "test.json")
     
     if os.path.exists(file_path):
         with open(file_path, "r") as file:
@@ -269,3 +277,11 @@ def remove_asins_from_list():
         print("ASINs removed successfully.")
     else:
         print("File not found.")
+
+
+unique_asins = get_all_unique_asins()
+
+with open("output.txt", "w") as file:
+    file.write(str(unique_asins))
+
+print("Output written to output.txt")
