@@ -1,17 +1,13 @@
 #this script is used to get the seller information from the amazon website
 #It takes ASIN as input and returns the seller information
-import random
 import re
+from typing import List
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
 import time
-import json
-import os
 import os
 import json
 import multiprocessing
-import gc
 import concurrent.futures
 
 
@@ -48,13 +44,36 @@ request = requests.Session()
 class Seller:
     """Seller class."""
 
-    def __init__(self, value):  # Constructor
-        self.my_attribute = value
+    def __init__(self):  # Constructor
+#        self.file =  open('info.txt', 'a') 
+        self.lock = False
+        self.asins_to_txt = []
+        self.counter = 0
 
     def my_method(self):
         return f"Value is {self.my_attribute}"
     
-    def send_request(url):
+    
+    def add_info_to_txt(self, asin, extracted_info):
+        self.asins_to_txt.append((asin, extracted_info))
+
+    def write_failed_asins_to_file(self, asins):
+        with open('failed_asins.txt', 'a') as file:
+            for asin in asins:
+                file.write(f"{asin}\n")
+
+    def write_to_file(self):
+#        copyList = self.asins_to_txt.copy()
+ #       self.asins_to_txt.clear()
+        with open('info.txt', 'a') as file: 
+            for asin, extracted_info in self.asins_to_txt:
+                print(f"Writing to file: {self.counter} => {asin}")
+                self.counter = self.counter + 1
+                file.write(f'"{asin}" = {extracted_info},\n')
+            self.asins_to_txt = []
+    #    self.lock = False
+
+    def send_request(self, url):
         print("+++++++++++++++++++++++++++++++++Sending request+++++++++++++++++++++++++++++++++")
         full_url= "https://www.amazon.com" + url
         print(full_url)
@@ -64,6 +83,7 @@ class Seller:
                 'api_key': 'RVHWA75QSDH3YVIF3GGQ9G8PPS7SY6YCBZN2402YQ7G63638AK3W1Q4TQ00AYQ4JGSNARY4ARNF87EFL',
                 'url': full_url,
             },
+            timeout=45
         )
         print('Response HTTP Status Code: ', response.status_code)
         #print('Response HTTP Response Body: ', response.content)
@@ -101,12 +121,13 @@ class Seller:
     #     print('Response HTTP Status Code: ', response.status_code)
     #     return response 
     
-    
+seller = Seller()
 def get_product_info_and_seller_id(asin):
+    global seller
     extracted_info = {}   
     url = "/dp/" + asin
     try:
-        response = Seller.send_request(url)
+        response = seller.send_request(url)
         soup = BeautifulSoup(response.content, 'html.parser')
 
         # Extract the product title
@@ -148,25 +169,23 @@ def get_product_info_and_seller_id(asin):
         if extracted_info['seller_id'] == 'Not Found':
             print("********************************************No seller ID found in Product page********************************************************************")
             print(asin,extracted_info)
-            add_info_to_txt(asin, extracted_info)
+            seller.add_info_to_txt(asin, extracted_info)
             return extracted_info
 
         seller_info = get_seller_info(extracted_info['seller_id'])
         extracted_info['seller_info'] = seller_info
         print("***********************************************SellerID found in Product Page*****************************************************************")
         print(asin,extracted_info)
-        add_info_to_txt(asin, extracted_info)
+        seller.add_info_to_txt(asin, extracted_info)
         return extracted_info
     except Exception as e:
         print("1****************************************************************************************************************")
         print(f"An error occurred: {str(e)}")
         print(asin,extracted_info)
-        add_info_to_txt(asin, extracted_info)
+        seller.add_info_to_txt(asin, extracted_info)
         return extracted_info
 
-def add_info_to_txt(asin, extracted_info):
-    with open('info.txt', 'a') as file:
-        file.write(f'"{asin}" = {extracted_info},\n')
+
 
 def extract_info_from_text(text, info):
     # Search for phone number, email, and address in the given text
@@ -187,6 +206,7 @@ def extract_info_from_text(text, info):
         info['address'] = ', '.join(address_match).strip()
 
 def get_seller_info(seller_url):
+    global seller
     print("+++++++++++++++++++++++++++++++++Getting Seller Info for +++++++++++++++++++++++++++++++++")
     print(seller_url)
     info = {
@@ -201,7 +221,7 @@ def get_seller_info(seller_url):
     #print("sellerUrl: ", seller_url)
     try:
         # Send a request to the URL
-        response = Seller.send_request(url)
+        response = seller.send_request(url)
 
         # Parse the HTML content
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -366,6 +386,9 @@ def make_asin_key_empty():
         
         print("ASINs changed to empty objects")
     
+
+
+
 def get_asins_from_json_in_chunks(chunk_size=20):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, "test.json")
@@ -404,40 +427,53 @@ def get_asins_from_json_in_chunks(chunk_size=20):
                     print(f"Failed to write the updated data back to the JSON file during chunk processing: {str(e)}")
 
 
-def process_asins_and_save_in_batches(batch_size=100000):
+def get_asins_from_asin_txt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     asin_file_path = os.path.join(current_dir, "asin.txt")
+    asins: List[str] = []
+    with open(asin_file_path, "r") as file:
+        for line in file.readlines():
+            
+            asins.append(line.strip())
+            if len(asins) >= 10:
+                yield asins
+                asins = []
 
-    # Read ASINs from the provided text file
-    try:
-        with open(asin_file_path, "r") as file:
-            asins = [line.strip() for line in file.readlines()]
-    except Exception as e:
-        print(f"Error reading the ASIN file: {e}")
-        return
 
+def process_asins_and_save_in_batches():
+    global seller
     # Process ASINs in batches
-    for i in range(0, len(asins), batch_size):
-        current_batch = asins[i:i + batch_size]
-
-        # Determine the number of workers based on available CPU cores
+    # Determine the number of workers based on available CPU cores
+    
+    
+    counter = 0
+    for asins in get_asins_from_asin_txt():
+        futures = []
         num_workers = multiprocessing.cpu_count()
-
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-            futures = [executor.submit(get_product_info_and_seller_id, asin) for asin in current_batch]
-            print(f"Processing ASINs {i + 1} to {i + batch_size} in batch")
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    result = future.result()
-                    print(result)
-                except Exception as e:
-                    print("10+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-                    print(f"An error occurred: {e}")
-                    exception_occured = True
+            for asin in asins:
+                futures.append(executor.submit(get_product_info_and_seller_id, asin))
+                counter = counter + 1
+            if counter == 0:
+                break
 
-        # Clear the result objects to free up memory
-        del futures
-        gc.collect()
+            try:
+                for future in concurrent.futures.as_completed(futures, 60):
+                    try:
+                        result = future.result()
+                    # print("10+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                        print(result)
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                        exception_occured = True
+            except concurrent.futures.TimeoutError:
+                seller.write_failed_asins_to_file(asins)
+                print("Failed to process ASINs")
+                print(asins)
+            #breakpoint()
+            seller.write_to_file()
+
+        # Clear the result objects to free up memor
 
     if exception_occured:
         print("Some errors occurred while processing ASINs")
