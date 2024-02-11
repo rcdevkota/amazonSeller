@@ -4,6 +4,9 @@ from django.http import JsonResponse
 from .models import Category
 from django.core import serializers
 
+from django.shortcuts import render, redirect
+from .forms import PasswordForm
+
 def home(request):
     return render(request, 'amazonseller/home.html')
 
@@ -21,12 +24,3 @@ def get_main_category(request):
     categories = Category.objects.all()
     data = [{'name': category.name, 'link': category.link} for category in categories]
     return JsonResponse(data, safe=False)
-
-#def add_sub_category(request):
-   # data = fetch_amazon_best_sellers_main_category()
-#get all subcategory
-#add product info
-#get all product info
-    
-#add seller info
-#get all seller info -> json to excel

@@ -83,7 +83,7 @@ class Seller:
                 'api_key': 'RVHWA75QSDH3YVIF3GGQ9G8PPS7SY6YCBZN2402YQ7G63638AK3W1Q4TQ00AYQ4JGSNARY4ARNF87EFL',
                 'url': full_url,
             },
-            timeout=45
+            timeout=60
         )
         print('Response HTTP Status Code: ', response.status_code)
         #print('Response HTTP Response Body: ', response.content)
@@ -389,7 +389,7 @@ def make_asin_key_empty():
 
 
 
-def get_asins_from_json_in_chunks(chunk_size=20):
+def get_asins_from_json_in_chunks(chunk_size=30):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, "test.json")
     try:
@@ -435,7 +435,7 @@ def get_asins_from_asin_txt():
         for line in file.readlines():
             
             asins.append(line.strip())
-            if len(asins) >= 10:
+            if len(asins) >= 30:
                 yield asins
                 asins = []
 

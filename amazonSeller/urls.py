@@ -17,11 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views
+from .views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('main_category/', views.main_category, name='main_category'),
-    path('/sub_category', views.sub_category,name ='sub-category'),
-    path('/seller_info',views.seller_info,name ='seller_info')
+    #path('password/', views.password_view, name='password_view'),
+    path('categories/<int:pk>/', category_detail, name='category_detail'),
 ]

@@ -202,6 +202,7 @@ def get_missing_asin_from_sub_category():
             json.dump(data, file)
 
 
+
 def get_asin_missing_item_from_sub_category():
     file_path = os.path.join(os.path.dirname(__file__), "list.json")
     
@@ -278,10 +279,12 @@ def remove_asins_from_list():
     else:
         print("File not found.")
 
+get_missing_asin_from_sub_category()
+remove_duplicate_asins()
 
-unique_asins = get_all_unique_asins()
+# unique_asins = get_all_unique_asins()
 
-with open("output.txt", "w") as file:
-    file.write(str(unique_asins))
+# with open("output.txt", "w") as file:
+#     file.write(str(unique_asins))
 
-print("Output written to output.txt")
+# print("Output written to output.txt")
