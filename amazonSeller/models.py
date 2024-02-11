@@ -6,13 +6,16 @@ class Country(models.Model):
     code = models.CharField(max_length=2, unique=True)
     def __str__(self):
         return self.name
+    
 
 class Category(models.Model):
-    name = models.CharField(max_length=255, unique=True, null=True)  # Assuming category names are unique
+    name = models.CharField(max_length=255, null=True)  # Assuming category names are unique
     link = models.URLField(max_length=255, null=True)
     country = models.ForeignKey(Country,on_delete=models.CASCADE, null=True)
     def __str__(self):
         return self.name
+    class Meta:
+        unique_together = ('name', 'country')
 
 class Subcategory(models.Model):
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE, default=None)
@@ -39,7 +42,7 @@ class ProductInfo(models.Model):
     seller_detailed_info = models.TextField(null=True)
     scraped = models.BooleanField(default=False)
     contacted = models.BooleanField(default=False)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True)
+    country = models.ForeignKey(Country, to_field='code', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f"{self.product_name} by {self.store_name}"
