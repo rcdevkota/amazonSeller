@@ -317,14 +317,70 @@ def add_asin_to_db(asins):
 
 def clean_info():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "info.txt")
+    file_path = os.path.join(current_dir, "terminal_dump.txt")
 
     with open(file_path, "r+") as file:
         lines = file.readlines()
         file.seek(0)
         unique_lines = set(lines)  # Remove duplicates using a set
-        file.writelines(unique_lines)
+        filtered_lines = [line for line in unique_lines if not line.startswith("https:")]
+        file.writelines(filtered_lines)
         file.truncate()
 
-clean_info()
+
+def fix_json_formatting(file_path):
+    with open(file_path, 'r+', encoding='utf-8') as file:
+        lines = file.readlines()
+        file.seek(0)
+        file.truncate()
+        for line in lines:
+            try:
+                # Try to load the JSON to see if it's already correct
+                json.loads(line)
+                file.write(line)  # Line is fine, write it back to the file
+            except json.JSONDecodeError:
+                # Attempt to fix common issues
+                try:
+                    # Use a recursive function to fix nested objects
+                    corrected_line = fix_nested_json(line)
+                    file.write(corrected_line)  # Write the corrected line back to the file
+                except Exception as e:
+                    # If it's still not valid or encounters an error, log the error or handle it as needed
+                    print(f"Could not fix line: {line}")
+                    # Optionally, write the unfixable line back to the file to not lose data
+                    file.write(line)
+
+def fix_nested_json(line):
+    # Recursive function to fix nested objects in JSON line
+    obj = json.loads(line)
+    fixed_obj = fix_nested_object(obj)
+    return json.dumps(fixed_obj)
+
+def fix_nested_object(obj):
+    # Recursive function to fix nested objects in JSON object
+    if isinstance(obj, dict):
+        fixed_dict = {}
+        for key, value in obj.items():
+            fixed_key = fix_key_quotes(key)
+            fixed_value = fix_nested_object(value)
+            fixed_dict[fixed_key] = fixed_value
+        return fixed_dict
+    elif isinstance(obj, list):
+        fixed_list = []
+        for item in obj:
+            fixed_item = fix_nested_object(item)
+            fixed_list.append(fixed_item)
+        return fixed_list
+    else:
+        return obj
+
+def fix_key_quotes(key):
+    # Function to add quotes around keys if missing
+    if not key.startswith('"') and not key.endswith('"'):
+        return f'"{key}"'
+    return key
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, "terminal_dump.txt")
+fixed_content = fix_json_formatting(file_path)
     
