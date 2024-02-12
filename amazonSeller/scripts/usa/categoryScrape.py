@@ -220,4 +220,6 @@ file_path = os.path.join(current_dir, 'test.json')
 with open(file_path, 'r') as f:
     subcategories = json.load(f)
 
-add_subcategories_to_db(subcategories)
+#add_subcategories_to_db(subcategories)
+
+

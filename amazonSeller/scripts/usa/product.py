@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import json
 import os
 import time
+import re
 AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
@@ -163,13 +164,6 @@ def delete_items_if_false_url():
         with open(file_path, "w") as file:
             json.dump(data, file)            
 
-subcategories = [{
-        "name": "Appliances",
-        "link": "/Best-Sellers-Appliances/zgbs/appliances/ref=zg_bs_pg_2_appliances?_encoding=UTF8&amp;pg=2"
-    },
-   ]
-
-
 def getall_asin_from_sub_category():
     file_path = os.path.join(os.path.dirname(__file__), "list.json")
     
@@ -313,9 +307,24 @@ def add_asin_to_db(asins):
     finally:
         print("Operation completed.")
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, 'sub_cat_asin.json')
-with open(file_path, 'r') as f:
-    asins = json.load(f)
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# file_path = os.path.join(current_dir, 'sub_cat_asin.json')
+# with open(file_path, 'r') as f:
+#     asins = json.load(f)
 
-add_asin_to_db(asins)
+# add_asin_to_db(asins)
+
+
+def clean_info():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "info.txt")
+
+    with open(file_path, "r+") as file:
+        lines = file.readlines()
+        file.seek(0)
+        unique_lines = set(lines)  # Remove duplicates using a set
+        file.writelines(unique_lines)
+        file.truncate()
+
+clean_info()
+    
