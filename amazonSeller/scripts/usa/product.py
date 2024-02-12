@@ -10,6 +10,9 @@ import json
 import os
 import time
 import re
+from dotenv import load_dotenv
+
+load_dotenv()
 AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
@@ -214,31 +217,36 @@ def get_asin_missing_item_from_sub_category():
 
 
 
-def get_all_unique_asins():
+def get_all_asins():
+    # Use '__file__' to get the directory of the current script. Adjust if necessary.
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, "sub_cat_asin.json")
-    asin_array = []
+    print(file_path)    
+    asin_set = set()  # Using a set to ensure uniqueness
+    print(" dsadfsafile")
 
+    # Check if the JSON file exists
     if os.path.exists(file_path):
         with open(file_path, "r") as file:
-            data = json.load(file)
+            print("file")
+            data = json.load(file)  # Load the JSON data
 
+        # Iterate through each item in the JSON data
         for item in data:
-            if "asins" in item:
-                if isinstance(item["asins"], dict):
-                    asin_array.extend(item["asins"].keys())
-                elif isinstance(item["asins"], list):
-                    asin_array.extend(item["asins"])
+            # Check if 'asins' key exists and has elements
+            if "asins" in item and item["asins"]:
+                # Extend the set with the ASINs from the current item
+                asin_set.update(item["asins"])
 
-    unique_asins = list(set(asin_array))
-
-    # Create asin.txt file and write unique ASINs
-    asin_file_path = os.path.join(current_dir, "unique_asin.txt")
+    # Path to the output text file
+    asin_file_path = os.path.join(current_dir, "wasin.txt")
+    # Write all unique ASINs to the file
     with open(asin_file_path, "w") as asin_file:
-        for asin in unique_asins:
+        for asin in asin_set:
             asin_file.write(asin + "\n")
 
-    return unique_asins
+    return list(asin_set)  # Optionally, return the list of unique ASINs
+ 
 
 def remove_duplicate_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -259,27 +267,11 @@ def remove_duplicate_asins():
             json.dump(data, file, indent=4)  # Using indent for better readability of the JSON file
         print("Duplicate ASINs removed successfully.")
 
-def remove_asins_from_list():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
-    
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            data = json.load(file)
 
-        for item in data:
-            if "asins" in item:
-                item["asins"] = []
 
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-        
-        print("ASINs removed successfully.")
-    else:
-        print("File not found.")
 
-#get_missing_asin_from_sub_category()
-#remove_duplicate_asins()
+
+
 
 def add_asin_to_db(asins):
     try:
@@ -291,15 +283,13 @@ def add_asin_to_db(asins):
             host=os.getenv('DB_HOST'),
         ) as conn:
             with conn.cursor() as c:
-                for item in asins:
-                    for asin in item['asins']:
-                        print(asin)
-                        try:
-                            c.execute("INSERT INTO \"amazonSeller_productinfo\" (asin, main_category_id, sub_category_id, country_id, scraped, contacted) VALUES (%s, %s, %s, %s, %s, %s)", (asin, '32', '16050', '2','False','False'))
-                        except psycopg2.errors.UniqueViolation:
-                            print(f"Skipping duplicate key violation:")
-                            continue
-                            pass        
+                for asin in asins:
+                    print(asin)
+                    try:
+                        c.execute("INSERT INTO \"amazonSeller_us_productinfo\" (asin, main_category_id, sub_category_id, scraped, contacted) VALUES ( %s, %s, %s, %s, %s)", (asin, '32', '16050','False','False'))
+                    except psycopg2.errors.UniqueViolation:
+                        print(f"Skipping duplicate key violation:")
+                        continue
             conn.commit()
             conn.close()
     except psycopg2.Error as e:
@@ -307,12 +297,7 @@ def add_asin_to_db(asins):
     finally:
         print("Operation completed.")
 
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# file_path = os.path.join(current_dir, 'sub_cat_asin.json')
-# with open(file_path, 'r') as f:
-#     asins = json.load(f)
 
-# add_asin_to_db(asins)
 
 
 def clean_info():
@@ -379,8 +364,96 @@ def fix_key_quotes(key):
     if not key.startswith('"') and not key.endswith('"'):
         return f'"{key}"'
     return key
+def remove_asins_from_list():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "test.json")
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            data = json.load(file)
+
+        for item in data:
+            if "asins" in item:
+                item["asins"] = []
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+        
+        print("ASINs removed successfully.")
+    else:
+        print("File not found.")
+
+#get_missing_asin_from_sub_category()
+#remove_duplicate_asins()
+
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# file_path = os.path.join(current_dir, "terminal_dump.txt")
+# fixed_content = fix_json_formatting(file_path)
+def extract_info_from_line(line):
+    # Define regex patterns for extracting information
+    patterns = {
+        'asin': r'"([A-Z0-9]{10})":',
+        'product_name': r'"product_name": "(.*?)"',
+        'store_name': r'"store_name": "(.*?)"',
+        'seller_name': r'"seller_name": "(.*?)"',
+        'seller_id': r'"seller_id": "(.*?)"',
+        'company_name': r'"name": "(.*?)"',  # Assuming company name is under "name"
+        'email': r'"email": "(.*?)"',
+        'phone_number': r'"phone_number": "(.*?)"',
+        'address': r'"address": "(.*?)"',
+        'about_seller': r'"about_seller": "(.*?)"',
+        'seller_detailed_info': r'"detailed_seller_info": "(.*?)"',
+        # 'scraped' and 'contacted' columns are not extracted from text, handle them as needed
+    }
+    extracted_info = {}
+    for key, pattern in patterns.items():
+        match = re.search(pattern, line)
+        extracted_info[key] = match.group(1) if match else None
+    return extracted_info
+
+def add_product_info_to_db(file_path):
+
+    try:
+        # Connect to your PostgreSQL database
+        with psycopg2.connect(
+            dbname=os.getenv('DB_NAME'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            host=os.getenv('DB_HOST'),
+        ) as conn:
+            with conn.cursor() as c:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    counter = 0  # Counter variable
+                    for line in file:
+                        info = extract_info_from_line(line)
+                        if info['asin']:
+                            try:
+                                c.execute("""
+                                    UPDATE \"amazonSeller_us_productinfo\"
+                                    SET product_name = %s, store_name = %s, seller_name = %s, seller_id = %s, 
+                                        company_name = %s, email = %s, phone_number = %s, address = %s, 
+                                        about_seller = %s, seller_detailed_info = %s, scraped = %s, contacted = %s
+                                    WHERE asin = %s""",
+                                    (info['product_name'], info['store_name'], info['seller_name'], info['seller_id'],
+                                     info['company_name'], info['email'], info['phone_number'], info['address'],
+                                     info['about_seller'], info['seller_detailed_info'], True, False,  # Assuming scraped=True, contacted=False
+                                     info['asin']))
+                            except psycopg2.errors.UniqueViolation:
+                                print(f"Skipping duplicate key violation for ASIN: {info['asin']}")
+                                continue
+                            counter += 1  # Increment counter
+                            print(f"Added product info for ASIN: {info['asin']} (Counter: {counter})")  # Print counter
+                conn.commit()
+    except psycopg2.Error as e:
+        print(f"An error occurred: {e}")
+    finally:
+        print("Operation completed.")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, "terminal_dump.txt")
-fixed_content = fix_json_formatting(file_path)
-    
+file_path = os.path.join(current_dir, 'info.txt')
+with open(file_path, 'r') as f:
+    asins = f.read().splitlines()
+
+add_product_info_to_db(file_path)
+
+

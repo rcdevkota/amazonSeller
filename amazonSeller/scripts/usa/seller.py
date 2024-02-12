@@ -8,6 +8,7 @@ import time
 import os
 import json
 import multiprocessing
+import csv
 import concurrent.futures
 
 
@@ -345,7 +346,7 @@ def get_asins_from_json_concruently(batch_size=10, timeout=20):
 
 def remove_duplicate_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "list.json")
+    file_path = os.path.join(current_dir, "sub_cat_asin.json")
     try:
         with open(file_path, "r") as file:
             data = json.load(file)
@@ -479,4 +480,49 @@ def process_asins_and_save_in_batches():
         print("Some errors occurred while processing ASINs")
         return
 
-process_asins_and_save_in_batches()
+#process_asins_and_save_in_batches()
+def find_email_and_phone(text):
+    """
+    Searches for email addresses and phone numbers within a given text string.
+    Returns a tuple containing the first found email and phone number, or None for each if not found.
+    """
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    phone_pattern = r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b'  # Simplistic pattern; adjust as needed
+    
+    email_match = re.search(email_pattern, text)
+    phone_match = re.search(phone_pattern, text)
+
+    email = email_match.group(0) if email_match else None
+    phone = phone_match.group(0) if phone_match else None
+
+    return (email, phone)
+
+def process_file(file_path):
+    csv_data = []  # Store CSV data
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            email, phone = find_email_and_phone(line)
+            
+            # Extract product_name, store_name, and seller_name using regex
+            product_name_match = re.search(r'"product_name": "(.*?)"', line)
+            store_name_match = re.search(r'"store_name": "(.*?)"', line)
+            seller_name_match = re.search(r'"seller_name": "(.*?)"', line)
+
+            product_name = product_name_match.group(1) if product_name_match else ''
+            store_name = store_name_match.group(1) if store_name_match else ''
+            seller_name = seller_name_match.group(1) if seller_name_match else ''
+            
+            # Only add to CSV if email is found         
+            if email:
+                csv_data.append([product_name, store_name, seller_name, email])
+
+    # Write to CSV
+    with open('output.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Product Name', 'Store Name', 'Seller Name', 'Email'])
+        writer.writerows(csv_data)
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, 'info.txt')
+updated_content = process_file(file_path)
