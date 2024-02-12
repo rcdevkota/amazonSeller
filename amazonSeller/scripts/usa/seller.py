@@ -83,7 +83,7 @@ class Seller:
                 'api_key': 'RVHWA75QSDH3YVIF3GGQ9G8PPS7SY6YCBZN2402YQ7G63638AK3W1Q4TQ00AYQ4JGSNARY4ARNF87EFL',
                 'url': full_url,
             },
-            timeout=60
+            timeout=120
         )
         print('Response HTTP Status Code: ', response.status_code)
         #print('Response HTTP Response Body: ', response.content)

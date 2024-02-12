@@ -3,6 +3,7 @@
 # the ASIN are saved in database in product table
 
 import random
+import psycopg2
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -221,7 +222,7 @@ def get_asin_missing_item_from_sub_category():
 
 def get_all_unique_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "list.json")
+    file_path = os.path.join(current_dir, "sub_cat_asin.json")
     asin_array = []
 
     if os.path.exists(file_path):
@@ -238,7 +239,7 @@ def get_all_unique_asins():
     unique_asins = list(set(asin_array))
 
     # Create asin.txt file and write unique ASINs
-    asin_file_path = os.path.join(current_dir, "asin.txt")
+    asin_file_path = os.path.join(current_dir, "unique_asin.txt")
     with open(asin_file_path, "w") as asin_file:
         for asin in unique_asins:
             asin_file.write(asin + "\n")
@@ -247,18 +248,22 @@ def get_all_unique_asins():
 
 def remove_duplicate_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
+    file_path = os.path.join(current_dir, "sub_cat_asin.json")
     
     if os.path.exists(file_path):
         with open(file_path, "r") as file:
             data = json.load(file)
 
+        # Process each item individually to remove duplicate ASINs
         for item in data:
             if "asins" in item:
+                # Convert the list of ASINs to a set to remove duplicates, then back to a list
                 item["asins"] = list(set(item["asins"]))
 
+        # Write the updated data back to the file
         with open(file_path, "w") as file:
-            json.dump(data, file)
+            json.dump(data, file, indent=4)  # Using indent for better readability of the JSON file
+        print("Duplicate ASINs removed successfully.")
 
 def remove_asins_from_list():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -279,12 +284,38 @@ def remove_asins_from_list():
     else:
         print("File not found.")
 
-get_missing_asin_from_sub_category()
-remove_duplicate_asins()
+#get_missing_asin_from_sub_category()
+#remove_duplicate_asins()
 
-# unique_asins = get_all_unique_asins()
+def add_asin_to_db(asins):
+    try:
+        # Connect to your PostgreSQL database
+        with psycopg2.connect(
+            dbname=os.getenv('DB_NAME'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            host=os.getenv('DB_HOST'),
+        ) as conn:
+            with conn.cursor() as c:
+                for item in asins:
+                    for asin in item['asins']:
+                        print(asin)
+                        try:
+                            c.execute("INSERT INTO \"amazonSeller_productinfo\" (asin, main_category_id, sub_category_id, country_id, scraped, contacted) VALUES (%s, %s, %s, %s, %s, %s)", (asin, '32', '16050', '2','False','False'))
+                        except psycopg2.errors.UniqueViolation:
+                            print(f"Skipping duplicate key violation:")
+                            continue
+                            pass        
+            conn.commit()
+            conn.close()
+    except psycopg2.Error as e:
+        print(f"An error occurred: {e}")
+    finally:
+        print("Operation completed.")
 
-# with open("output.txt", "w") as file:
-#     file.write(str(unique_asins))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, 'sub_cat_asin.json')
+with open(file_path, 'r') as f:
+    asins = json.load(f)
 
-# print("Output written to output.txt")
+add_asin_to_db(asins)
