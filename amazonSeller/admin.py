@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Country, Category, CategoryUS, CategoryDE, Subcategory, ProductInfo
+from .models import *
 
 
 # Admin for Country
@@ -21,10 +21,10 @@ class SubcategoryAdmin(admin.ModelAdmin):
 
 # Admin for ProductInfo
 class ProductInfoAdmin(admin.ModelAdmin):
-    list_display = ('product_name', 'store_name', 'seller_name', 'company_name', 'country', 'scraped', 'contacted')
-    list_filter = ('main_category', 'sub_category', 'country', 'scraped', 'contacted')
+    list_display = ('product_name', 'store_name', 'seller_name', 'company_name', 'scraped', 'contacted')
+    list_filter = ('main_category', 'sub_category','scraped', 'contacted')
     search_fields = ('product_name', 'store_name', 'seller_name', 'asin')
-    raw_id_fields = ('main_category', 'sub_category', 'country')
+    raw_id_fields = ('main_category', 'sub_category')
 
 # Admin for CategoryUS
 class CategoryUSAdmin(admin.ModelAdmin):
@@ -42,6 +42,6 @@ class CategoryDEAdmin(admin.ModelAdmin):
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Subcategory, SubcategoryAdmin)
-admin.site.register(ProductInfo, ProductInfoAdmin)
+admin.site.register(Us_productInfo, ProductInfoAdmin)
 admin.site.register(CategoryUS, CategoryUSAdmin)
 admin.site.register(CategoryDE, CategoryDEAdmin)

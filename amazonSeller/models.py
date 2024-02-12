@@ -26,10 +26,10 @@ class Subcategory(models.Model):
     def __str__(self):
         return self.name
 
-class ProductInfo(models.Model):
+class Us_productInfo(models.Model):
     asin = models.CharField(max_length=255)
-    main_category = models.ForeignKey(Category, related_name='main_category_products', on_delete=models.CASCADE, default=None, null=True)
-    sub_category = models.ForeignKey(Subcategory, related_name='subcategory_products', on_delete=models.CASCADE, default=None, null=True)
+    main_category = models.ForeignKey(Category,  on_delete=models.CASCADE, default=None, null=True)
+    sub_category = models.ForeignKey(Subcategory,  on_delete=models.CASCADE, default=None, null=True)
     product_name = models.CharField(max_length=255, null=True)
     store_name = models.CharField(max_length=255, null=True)
     seller_name = models.CharField(max_length=255, null=True)
@@ -42,14 +42,31 @@ class ProductInfo(models.Model):
     seller_detailed_info = models.TextField(null=True)
     scraped = models.BooleanField(default=False)
     contacted = models.BooleanField(default=False)
-    country = models.ForeignKey(Country, to_field='code', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f"{self.product_name} by {self.store_name}"
 
-    class Meta:
-        unique_together = ('asin', 'country')
 
+class De_productInfo(models.Model):
+    asin = models.CharField(max_length=255)
+    main_category = models.ForeignKey(Category, on_delete=models.CASCADE, default=None, null=True)
+    sub_category = models.ForeignKey(Subcategory, on_delete=models.CASCADE, default=None, null=True)
+    product_name = models.CharField(max_length=255, null=True)
+    store_name = models.CharField(max_length=255, null=True)
+    seller_name = models.CharField(max_length=255, null=True)
+    seller_id = models.CharField(max_length=255, null=True)
+    company_name = models.CharField(max_length=255, null=True)
+    email = models.EmailField(null=True)
+    phone_number = models.CharField(max_length=255, null=True)
+    address = models.TextField(null=True)
+    about_seller = models.TextField(null=True)
+    seller_detailed_info = models.TextField(null=True)
+    scraped = models.BooleanField(default=False)
+    contacted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.product_name} by {self.store_name}"
+    
 class CategoryUS(Category):
     class Meta:
         proxy = True
