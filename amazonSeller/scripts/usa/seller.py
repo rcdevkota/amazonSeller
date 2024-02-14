@@ -8,7 +8,6 @@ import time
 import os
 import json
 import multiprocessing
-import csv
 import concurrent.futures
 
 
@@ -186,8 +185,6 @@ def get_product_info_and_seller_id(asin):
         seller.add_info_to_txt(asin, extracted_info)
         return extracted_info
 
-
-
 def extract_info_from_text(text, info):
     # Search for phone number, email, and address in the given text
     phone_match = re.search(r'Telephone:\s*([\+0-9\(\) -]+)', text)
@@ -247,7 +244,6 @@ def get_seller_info(seller_url):
 
     return info
 
-
 def get_seller_id_from_url(seller_url):
     # Extract the seller ID from the seller URL
     try:
@@ -261,8 +257,6 @@ def get_seller_id_from_url(seller_url):
         print("2****************************************************************************************************************")
         print(f"An error occurred: {str(e)}")
         return None
-
-
 
 def get_asins_from_json():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -292,7 +286,6 @@ def get_asins_from_json():
         print(f"An error occurred while reading the JSON file: {str(e)}")
         return None
 
-
 def process_asin_batch(asins, asin_to_data_map, timeout=20):
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -311,38 +304,6 @@ def process_asin_batch(asins, asin_to_data_map, timeout=20):
         print("6****************************************************************************************************************")
         print(f"An error occurred while processing ASIN batch: {str(e)}")
 
-def get_asins_from_json_concruently(batch_size=10, timeout=20):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "list.json")
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-    except Exception as e:
-        print(f"Failed to read the JSON file: {str(e)}")
-        return
-
-    asins_to_fetch = []
-    asin_to_data_map = {}
-
-    for item in data:
-        if isinstance(item.get('asins'), dict):
-            for asin, info in item['asins'].items():
-                if not info:  # Ensure to fetch only if info is empty
-                    asins_to_fetch.append(asin)
-                    asin_to_data_map[asin] = item
-
-    # Process in batches
-    for i in range(0, len(asins_to_fetch), batch_size):
-        batch_asins = asins_to_fetch[i:i+batch_size]
-        try:
-            process_asin_batch(batch_asins, asin_to_data_map, timeout=timeout)
-            # Checkpoint: Save progress after each batch
-            with open(file_path, "w") as file:
-                json.dump(data, file, indent=4)
-            print(f"Checkpoint: Successfully updated the JSON file for batch starting with ASIN {batch_asins[0]}")
-        except Exception as e:
-            print("7****************************************************************************************************************")
-            print(f"An error occurred while processing batch starting with ASIN {batch_asins[0]}: {str(e)}")
 
 def remove_duplicate_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -367,67 +328,7 @@ def remove_duplicate_asins():
         print("Duplicate ASINs removed successfully")
     except Exception as e:
         print(f"An error occurred while removing duplicate ASINs: {str(e)}")
-
-        
-def make_asin_key_empty():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
     
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        for item in data:
-            asins = item.get("asins")
-            if asins:
-                item["asins"] = {asin: {} for asin in asins}
-
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-        
-        print("ASINs changed to empty objects")
-    
-
-
-
-def get_asins_from_json_in_chunks(chunk_size=30):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-    except Exception as e:
-        print(f"Failed to read the JSON file: {str(e)}")
-        return None
-
-    # Function to process a single ASIN and return the updated info
-    def process_asin(asin):
-        try:
-            seller_info = get_product_info_and_seller_id(asin)
-            return asin, seller_info
-        except Exception as e:
-            print(f"An error occurred while getting seller info for ASIN {asin}: {str(e)}")
-            return asin, None
-
-    # Iterate over items and process ASINs
-    for item in data:
-        if 'asins' in item and isinstance(item['asins'], dict):
-            all_asins = list(item['asins'].keys())
-            for i in range(0, len(all_asins), chunk_size):
-                chunk_asins = all_asins[i:i+chunk_size]
-                for asin in chunk_asins:
-                    if not item['asins'][asin]:  # If the ASIN info is empty
-                        asin, seller_info = process_asin(asin)
-                        item['asins'][asin] = seller_info  # Update the info
-                # Checkpoint: Save progress after each chunk
-                try:
-                    with open(file_path, "w") as file:
-                        json.dump(data, file, indent=4)
-                    print(f"Checkpoint: Successfully updated the JSON file for chunk up to ASIN {chunk_asins[-1]}")
-                except Exception as e:
-                    print(f"Failed to write the updated data back to the JSON file during chunk processing: {str(e)}")
-
-
 def get_asins_from_asin_txt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     asin_file_path = os.path.join(current_dir, "asin.txt")
@@ -439,7 +340,6 @@ def get_asins_from_asin_txt():
             if len(asins) >= 30:
                 yield asins
                 asins = []
-
 
 def process_asins_and_save_in_batches():
     global seller
@@ -481,48 +381,3 @@ def process_asins_and_save_in_batches():
         return
 
 #process_asins_and_save_in_batches()
-def find_email_and_phone(text):
-    """
-    Searches for email addresses and phone numbers within a given text string.
-    Returns a tuple containing the first found email and phone number, or None for each if not found.
-    """
-    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    phone_pattern = r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b'  # Simplistic pattern; adjust as needed
-    
-    email_match = re.search(email_pattern, text)
-    phone_match = re.search(phone_pattern, text)
-
-    email = email_match.group(0) if email_match else None
-    phone = phone_match.group(0) if phone_match else None
-
-    return (email, phone)
-
-def process_file(file_path):
-    csv_data = []  # Store CSV data
-
-    with open(file_path, 'r', encoding='utf-8') as file:
-        for line in file:
-            email, phone = find_email_and_phone(line)
-            
-            # Extract product_name, store_name, and seller_name using regex
-            product_name_match = re.search(r'"product_name": "(.*?)"', line)
-            store_name_match = re.search(r'"store_name": "(.*?)"', line)
-            seller_name_match = re.search(r'"seller_name": "(.*?)"', line)
-
-            product_name = product_name_match.group(1) if product_name_match else ''
-            store_name = store_name_match.group(1) if store_name_match else ''
-            seller_name = seller_name_match.group(1) if seller_name_match else ''
-            
-            # Only add to CSV if email is found         
-            if email:
-                csv_data.append([product_name, store_name, seller_name, email])
-
-    # Write to CSV
-    with open('output.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Product Name', 'Store Name', 'Seller Name', 'Email'])
-        writer.writerows(csv_data)
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, 'info.txt')
-updated_content = process_file(file_path)
