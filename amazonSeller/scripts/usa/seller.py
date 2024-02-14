@@ -1,10 +1,11 @@
 #this script is used to get the seller information from the amazon website
 #It takes ASIN as input and returns the seller information
+import random
 import re
+import time
 from typing import List
 import requests
 from bs4 import BeautifulSoup
-import time
 import os
 import json
 import multiprocessing
@@ -44,9 +45,7 @@ request = requests.Session()
 
 class Seller:
     """Seller class."""
-
     def __init__(self):  # Constructor
-#        self.file =  open('info.txt', 'a') 
         self.lock = False
         self.asins_to_txt = []
         self.counter = 0
@@ -70,14 +69,14 @@ class Seller:
             for asin, extracted_info in self.asins_to_txt:
                 print(f"Writing to file: {self.counter} => {asin}")
                 self.counter = self.counter + 1
-                file.write(f'"{asin}" = {extracted_info},\n')
+                file.write(f'"{asin}" : {extracted_info},\n')
             self.asins_to_txt = []
     #    self.lock = False
 
     def send_request(self, url):
-        print("+++++++++++++++++++++++++++++++++Sending request+++++++++++++++++++++++++++++++++")
+        #print("+++++++++++++++++++++++++++++++++Sending request+++++++++++++++++++++++++++++++++")
         full_url= "https://www.amazon.com" + url
-        print(full_url)
+        #print(full_url)
         response = requests.get(
             url='https://app.scrapingbee.com/api/v1/',
             params={
@@ -86,41 +85,41 @@ class Seller:
             },
             timeout=120
         )
-        print('Response HTTP Status Code: ', response.status_code)
+        print(full_url,'Response HTTP Status Code: ', response.status_code)
         #print('Response HTTP Response Body: ', response.content)
         return response
 
-    # def send_request_without_proxy(url):
-    #     userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
-    #     user = USER_AGENTS[userAgentIndex]
+    def send_request_without_proxy(url):
+        userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
+        user = USER_AGENTS[userAgentIndex]
        
-    #     headers = {
-    #         "user-agent": user,
-    #         "Cookie": "8rShzaMtFiBn4qZUtWPg6Ngo1sf84TCBWPLhCqqbuGwfmFstKRjjI7GyuAYHD1QZsYVXuX2nL"
-    #         "+WFpTLONMwq4Rf5N1OAAvXKGOOd7EJT+KIx2TK+ePErJBXZEydz/vb36n/9FMuT9DyhmtT3j4OgZQTJFpTvVQYNbU2dXtbW3j7077N10ULoN+AVL89Xo"
-    #         "+Mi4DT9IPiD5sTVYMftd0XGD+G9/ocQBArPHoqJRuN28R9AyJVbQNzetOjGt0ZRQEzKdLLGMeEKXcSGBLe5tvpw3clZW5zynRw0LwdYvtbcf"
-    #         "+qMWPPI7HPHvWlWp2zsGAsBv6p87LpdKh4ruT1rK24bUt7b2GqVpEop",
-    #         "Referer": "https://www.amazon.com",
-    #         "authority": "www.amazon.com",
-    #         "path": url,
-    #         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
-    #                 "application/signed-exchange;v=b3;q=0.7",
-    #         "Accept-Encoding": "gzip, deflate, br",
-    #     }
+        headers = {
+            "user-agent": user,
+            "Cookie": "8rShzaMtFiBn4qZUtWPg6Ngo1sf84TCBWPLhCqqbuGwfmFstKRjjI7GyuAYHD1QZsYVXuX2nL"
+            "+WFpTLONMwq4Rf5N1OAAvXKGOOd7EJT+KIx2TK+ePErJBXZEydz/vb36n/9FMuT9DyhmtT3j4OgZQTJFpTvVQYNbU2dXtbW3j7077N10ULoN+AVL89Xo"
+            "+Mi4DT9IPiD5sTVYMftd0XGD+G9/ocQBArPHoqJRuN28R9AyJVbQNzetOjGt0ZRQEzKdLLGMeEKXcSGBLe5tvpw3clZW5zynRw0LwdYvtbcf"
+            "+qMWPPI7HPHvWlWp2zsGAsBv6p87LpdKh4ruT1rK24bUt7b2GqVpEop",
+            "Referer": "https://www.amazon.com",
+            "authority": "www.amazon.com",
+            "path": url,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
+                    "application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+        }
 
-    #     full_url = AMAZON_BASE_URL + url
-    #     print(full_url)
-    #     request.headers.update(headers)
-    #     retryBackOff = 1
-    #     response = None
-    #     while not response:
-    #         response = request.get(full_url, headers=headers, cookies={}) 
-    #         if retryBackOff >= 10:
-    #             break
-    #         time.sleep(retryBackOff)
-    #         retryBackOff = retryBackOff + 1
-    #     print('Response HTTP Status Code: ', response.status_code)
-    #     return response 
+        full_url = AMAZON_BASE_URL + url
+        print(full_url)
+        request.headers.update(headers)
+        retryBackOff = 1
+        response = None
+        while not response:
+            response = request.get(full_url, headers=headers, cookies={}) 
+            if retryBackOff >= 10:
+                break
+            time.sleep(retryBackOff)
+            retryBackOff = retryBackOff + 1
+        print('Response HTTP Status Code: ', response.status_code)
+        return response 
     
 seller = Seller()
 def get_product_info_and_seller_id(asin):
@@ -186,8 +185,6 @@ def get_product_info_and_seller_id(asin):
         seller.add_info_to_txt(asin, extracted_info)
         return extracted_info
 
-
-
 def extract_info_from_text(text, info):
     # Search for phone number, email, and address in the given text
     phone_match = re.search(r'Telephone:\s*([\+0-9\(\) -]+)', text)
@@ -208,8 +205,6 @@ def extract_info_from_text(text, info):
 
 def get_seller_info(seller_url):
     global seller
-    print("+++++++++++++++++++++++++++++++++Getting Seller Info for +++++++++++++++++++++++++++++++++")
-    print(seller_url)
     info = {
         'name': None,
         'email': None,
@@ -219,7 +214,6 @@ def get_seller_info(seller_url):
         'detailed_seller_info': None
     }
     url = '/sp?ie=UTF8&seller=' + seller_url
-    #print("sellerUrl: ", seller_url)
     try:
         # Send a request to the URL
         response = seller.send_request(url)
@@ -228,25 +222,21 @@ def get_seller_info(seller_url):
         soup = BeautifulSoup(response.content, 'html.parser')
         # Extract information from the first div (About Seller) a-box-inner a-padding-medium
         about_seller_div = soup.find(id="page-section-about-seller")
-        #print(about_seller_div)
         if about_seller_div:
             about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
             info['about_seller'] = about_seller_text
             extract_info_from_text(about_seller_text, info)
-        # Extract information from the second div (Detailed Seller Information) a-box-inner a-padding-medium
         detailed_info_div = soup.find(id="page-section-detail-seller-info")
-        #print(detailed_info_div)
+
 
         if detailed_info_div:
             detailed_info_text = detailed_info_div.get_text(separator=' ', strip=True)
             info['detailed_seller_info'] = detailed_info_text
             extract_info_from_text(detailed_info_text, info)
     except Exception as e:
-        print("2****************************************************************************************************************")
         print("An error occurred:", str(e))
 
     return info
-
 
 def get_seller_id_from_url(seller_url):
     # Extract the seller ID from the seller URL
@@ -258,40 +248,8 @@ def get_seller_id_from_url(seller_url):
                 seller_id = seller_id_match.group(1)
         return seller_id
     except Exception as e:
-        print("2****************************************************************************************************************")
         print(f"An error occurred: {str(e)}")
         return None
-
-
-
-def get_asins_from_json():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "list.json")
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        for item in data:
-            asins = item.get("asins")
-            if asins:
-                for asin, info in asins.items():
-                    if not info:  # Check if the asin has an empty object
-                        try:
-                            seller_info = get_product_info_and_seller_id(asin)
-                            #print("added to json")
-                            asins[asin] = seller_info
-                        except Exception as e:
-                            print("4****************************************************************************************************************")
-                            print(f"An error occurred while getting seller info for ASIN {asin}: {str(e)}")
-
-            with open(file_path, "w") as file:
-                json.dump(data, file)
-        return data
-    except Exception as e:
-        print("5****************************************************************************************************************")
-        print(f"An error occurred while reading the JSON file: {str(e)}")
-        return None
-
 
 def process_asin_batch(asins, asin_to_data_map, timeout=20):
     try:
@@ -308,87 +266,7 @@ def process_asin_batch(asins, asin_to_data_map, timeout=20):
                 except Exception as e:
                     print(f"Failed to fetch data for ASIN {asin}: {str(e)}")
     except Exception as e:
-        print("6****************************************************************************************************************")
         print(f"An error occurred while processing ASIN batch: {str(e)}")
-
-def get_asins_from_json_concruently(batch_size=10, timeout=20):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "list.json")
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-    except Exception as e:
-        print(f"Failed to read the JSON file: {str(e)}")
-        return
-
-    asins_to_fetch = []
-    asin_to_data_map = {}
-
-    for item in data:
-        if isinstance(item.get('asins'), dict):
-            for asin, info in item['asins'].items():
-                if not info:  # Ensure to fetch only if info is empty
-                    asins_to_fetch.append(asin)
-                    asin_to_data_map[asin] = item
-
-    # Process in batches
-    for i in range(0, len(asins_to_fetch), batch_size):
-        batch_asins = asins_to_fetch[i:i+batch_size]
-        try:
-            process_asin_batch(batch_asins, asin_to_data_map, timeout=timeout)
-            # Checkpoint: Save progress after each batch
-            with open(file_path, "w") as file:
-                json.dump(data, file, indent=4)
-            print(f"Checkpoint: Successfully updated the JSON file for batch starting with ASIN {batch_asins[0]}")
-        except Exception as e:
-            print("7****************************************************************************************************************")
-            print(f"An error occurred while processing batch starting with ASIN {batch_asins[0]}: {str(e)}")
-
-def remove_duplicate_asins():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "sub_cat_asin.json")
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        unique_asins = set()
-        for item in data:
-            asins = item.get("asins")
-            if asins:
-                for asin in list(asins.keys()):
-                    if asin in unique_asins:
-                        del asins[asin]
-                    else:
-                        unique_asins.add(asin)
-
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-        
-        print("Duplicate ASINs removed successfully")
-    except Exception as e:
-        print(f"An error occurred while removing duplicate ASINs: {str(e)}")
-
-        
-def make_asin_key_empty():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "test.json")
-    
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        for item in data:
-            asins = item.get("asins")
-            if asins:
-                item["asins"] = {asin: {} for asin in asins}
-
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-        
-        print("ASINs changed to empty objects")
-    
-
-
 
 def get_asins_from_json_in_chunks(chunk_size=30):
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -427,7 +305,6 @@ def get_asins_from_json_in_chunks(chunk_size=30):
                 except Exception as e:
                     print(f"Failed to write the updated data back to the JSON file during chunk processing: {str(e)}")
 
-
 def get_asins_from_asin_txt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     asin_file_path = os.path.join(current_dir, "asin.txt")
@@ -439,7 +316,6 @@ def get_asins_from_asin_txt():
             if len(asins) >= 30:
                 yield asins
                 asins = []
-
 
 def process_asins_and_save_in_batches():
     global seller
@@ -459,28 +335,23 @@ def process_asins_and_save_in_batches():
                 break
 
             try:
-                for future in concurrent.futures.as_completed(futures, 60):
+                for future in concurrent.futures.as_completed(futures, 120):
                     try:
                         result = future.result()
-                    # print("10+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-                        print(result)
+                       #print(result)
                     except Exception as e:
                         print(f"An error occurred: {e}")
                         exception_occured = True
             except concurrent.futures.TimeoutError:
                 seller.write_failed_asins_to_file(asins)
-                print("Failed to process ASINs")
-                print(asins)
+                print("Failed to process ASINs:",asins)
             #breakpoint()
             seller.write_to_file()
-
-        # Clear the result objects to free up memor
 
     if exception_occured:
         print("Some errors occurred while processing ASINs")
         return
 
-#process_asins_and_save_in_batches()
 def find_email_and_phone(text):
     """
     Searches for email addresses and phone numbers within a given text string.
@@ -518,11 +389,14 @@ def process_file(file_path):
                 csv_data.append([product_name, store_name, seller_name, email])
 
     # Write to CSV
-    with open('output.csv', 'w', newline='') as csvfile:
+    with open('output1.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Product Name', 'Store Name', 'Seller Name', 'Email'])
         writer.writerows(csv_data)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, 'info.txt')
+file_path = os.path.join(current_dir, 'a.txt')
 updated_content = process_file(file_path)
+
+
+#process_asins_and_save_in_batches()

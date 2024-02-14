@@ -451,9 +451,53 @@ def add_product_info_to_db(file_path):
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(current_dir, 'info.txt')
-with open(file_path, 'r') as f:
-    asins = f.read().splitlines()
+# with open(file_path, 'r') as f:
+#     asins = f.read().splitlines()
 
-add_product_info_to_db(file_path)
+#add_product_info_to_db(file_path)
 
 
+def extract_asins_from_line(line):
+    """
+    Extracts ASIN from a given line using regex.
+    Assumes that ASIN is always formatted within quotes and followed by a colon.
+    """
+    match = re.search(r'"([A-Z0-9]{10})":', line)
+    return match.group(1) if match else None
+
+def read_asins_from_file(file_path):
+    """
+    Reads ASINs from a given file, assuming each line contains JSON-like data.
+    """
+    asins = set()
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            asin = extract_asins_from_line(line)
+            if asin:
+                asins.add(asin)
+    return asins
+
+def delete_matching_asins(main_file_path, asin_file_path):
+    """
+    Reads ASINs from the main file and deletes any matching ASINs from the asin.txt file.
+    """
+    # Extract ASINs from the main file
+    main_asins = read_asins_from_file(main_file_path)
+    
+    # Read all ASINs from asin.txt
+    with open(asin_file_path, 'r', encoding='utf-8') as file:
+        asin_txt_asins = file.read().splitlines()
+    
+    # Filter out any ASINs found in the main file
+    filtered_asins = [asin for asin in asin_txt_asins if asin not in main_asins]
+    
+    # Write the filtered ASINs back to asin.txt
+    with open(asin_file_path, 'w', encoding='utf-8') as file:
+        for asin in filtered_asins:
+            file.write(asin + "\n")
+
+# Example usage
+main_file_path = file_path  # Path to your main file with JSON-like lines
+asin_file_path = os.path.join(current_dir, 'a.txt')  # Path to your asin.txt file
+#delete_matching_asins(main_file_path, asin_file_path)
+fix_json_formatting(asin_file_path)
