@@ -7,6 +7,7 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 import csv
+import pandas as pd
 
 
 
@@ -279,4 +280,13 @@ def process_file(file_path):
         writer.writerows(csv_data)
 
 #fix_json_formatting(file_path)
-updated_content = process_file(file_path)
+print("done formatting")
+#updated_content = process_file(file_path)
+print("done csv")
+# Load the CSV file
+csv_file = os.path.join(current_dir, 'output.csv')
+df = pd.read_csv(csv_file)
+
+# Save as an Excel file
+excel_file = os.path.join(current_dir, 'output1.xlsx')
+df.to_excel(excel_file, index=False)
