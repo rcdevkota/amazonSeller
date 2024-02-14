@@ -2,13 +2,18 @@
 #It takes ASIN as input and returns the seller information
 
 import random
+import re
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import json
 import time
+import os
+from dotenv import load_dotenv
 
-AMAZON_BASE_URL = "https://www.amazon.com/dp/"
+load_dotenv()
+
+AMAZON_BASE_URL = "https://www.amazon.de/dp/"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
@@ -37,20 +42,6 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; ARM; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.15254"
 ]
 request = requests.Session()
-products = ['B00F4CEHNK', 'B004RMK4P8', 'B00GAC1D2G', 'B07C438TMN', 'B01LYOCVZF', 'B07RZ74VLR', 'B07RX6FBFR', 'B0C8VHZR14', 'B0BCCYLB13', 'B0CKZGY5B6', 'B099VMT8VZ', 'B08FC6C75Y', 'B0CNG96XZF', 'B094WL86N5', 'B01NAWKYZ0', 'B0C8VKH1ZH', 'B09B4MJ9H3', 'B0BCCXZDT5', 'B094PS5RZQ', 'B07RZ75JW3', 'B0BFJWCYTL', 'B097B2YWFX', 'B08WFD42G5', 'B07TFP7JFH', 'B09VV5LJS1', 'B0C91MLPNG', 'B0BCDJGJ9N', 'B07SFKTLZM', 'B01MS7YUA7', 'B0BSYFB99D', 'B0CCSTWB9R', 'B07MVG7H8V', 'B0C7GW9F88', 'B00YXO5U40', 'B0BY3LT3Z9', 'B0C7F58QFT', 'B07D13QGXM', 'B08K3S6WJM', 'B0C8VKNJ1B', 'B08F4444HM', 'B00YXO5UKY', 'B01N5OKGLH', 'B0C6YNW2TD', 'B07GBZ4Q68', 'B0C7RNTFLY', 'B098JTDPQC', 'B01NAUKS62', 'B07NS61HVY', 'B01N3ASPNV', 'B088GD5WD4', 'B00F4CEHNK', 'B004RMK4P8', 'B00GAC1D2G', 'B07C438TMN', 'B01LYOCVZF', 'B07RZ74VLR', 'B07RX6FBFR', 'B0C8VHZR14', 'B0BCCYLB13', 'B0CKZGY5B6', 'B099VMT8VZ', 'B08FC6C75Y', 'B0CNG96XZF', 'B094WL86N5', 'B01NAWKYZ0', 'B0C8VKH1ZH', 'B09B4MJ9H3', 'B0BCCXZDT5', 'B094PS5RZQ', 'B07RZ75JW3', 'B0BFJWCYTL', 'B097B2YWFX', 'B08WFD42G5', 'B07TFP7JFH', 'B09VV5LJS1', 'B0C91MLPNG', 'B0BCDJGJ9N', 'B07SFKTLZM', 'B01MS7YUA7', 'B0BSYFB99D', 'B0CCSTWB9R', 'B07MVG7H8V', 'B0C7GW9F88', 'B00YXO5U40', 'B0BY3LT3Z9', 'B0C7F58QFT', 'B07D13QGXM', 'B08K3S6WJM', 'B0C8VKNJ1B', 'B08F4444HM', 'B00YXO5UKY', 'B01N5OKGLH', 'B0C6YNW2TD', 'B07GBZ4Q68', 'B0C7RNTFLY', 'B098JTDPQC', 'B01NAUKS62', 'B07NS61HVY', 'B01N3ASPNV', 'B088GD5WD4'
-]
-def send_request(url):
-    response = requests.get(
-        url='https://app.scrapingbee.com/api/v1/',
-        params={
-            'api_key': 'H6U4CNF21J3B83L0CZL0RLFM0GE7T9PZ9S6DTUT60EOPL7YZB0YSAHVO3XHM5SB6VAHBFFIZDUKKDN9S',
-            'url': url,
-        },
-
-    )
-    print('Response HTTP Status Code: ', response.status_code)
-    # print('Response HTTP Response Body: ', response.content)
-    return response
 
 class Seller:
     """Seller class."""
@@ -70,17 +61,15 @@ class Seller:
         print(asin)
         headers = {
             "user-agent": user,
-            "Cookie": "x-main=4H4PAb9kQtk2wwvWsrYULkO2C1fc3TSisJNgJp4H9kxZPFKG9foI4SD2UGi5iiAo; "
-                    "at-main=Atza"
-                    "|IwEBIP9O0aNybb5YG0xUQD9mk46jqanwHrU_NluV2rRSziiyWBfvVmC2dAZbfY1rRcAWEzrdYGG0LIyR9nJ5XZOOZBpC3fIrAz6iLaNWrVhZ_SiDF0QBLTXfAbbfLYlMLdKCYuB_7_ueRyiuJZWJ5qMU0ENjAsLsLAaZNbv_FhDIAlBdVfcgscdGjbUleDiEZbpEOkVa2OsOQs0Nyvssd_tErxda; sess-at-main=\"aQTU63C+9QPTNmIFQ+jeuMMcPkdu83eO5EmAyUR1NVU=\"; ubid-main=131-3218811-7398132; aws-target-data=%7B%22support%22%3A%221%22%7D; sp-cdn=\"L5Z9:DE\"; aws-ubid-main=458-4182210-1032216; aws-userInfo-signed=eyJ0eXAiOiJKV1MiLCJrZXlSZWdpb24iOiJ1cy1lYXN0LTEiLCJhbGciOiJFUzM4NCIsImtpZCI6ImRiYWRkNTY2LWE4MjEtNGM0NC04MDhhLTFlNzE1MWFlYWM2MCJ9.eyJzdWIiOiIiLCJzaWduaW5UeXBlIjoiUFVCTElDIiwiaXNzIjoiaHR0cDpcL1wvc2lnbmluLmF3cy5hbWF6b24uY29tXC9zaWduaW4iLCJrZXliYXNlIjoiWFdvcHJGSk9WZ0xPTE93XC9WQm1UN0xiR01qQlFTSW53RVl3dDZ1VWM5d009IiwiYXJuIjoiYXJuOmF3czppYW06OjQ1MzkyMTYzMjUzOTpyb290IiwidXNlcm5hbWUiOiJBeWFzaFBNVCJ9.SyJSbYrIC0g4z-DdImqudc1ZQSzx-kEVApme-FHr0WHhKrWJHVtgn0fJi5Fji87MvQFb8HM-oXBqv_l1pbZ_uQD1xMECFAfUzp5MJqOtTU3IXD8YWHeQ_LG8G4jARyLr; aws-userInfo=%7B%22arn%22%3A%22arn%3Aaws%3Aiam%3A%3A453921632539%3Aroot%22%2C%22alias%22%3A%22%22%2C%22username%22%3A%22AyashPMT%22%2C%22keybase%22%3A%22XWoprFJOVgLOLOw%2FVBmT7LbGMjBQSInwEYwt6uUc9wM%5Cu003d%22%2C%22issuer%22%3A%22http%3A%2F%2Fsignin.aws.amazon.com%2Fsignin%22%2C%22signinType%22%3A%22PUBLIC%22%7D; session-id=140-3119798-0790727; session-id-apay=140-3119798-0790727; session-id-time=2082787201l; i18n-prefs=USD; skin=noskin; lc-main=en_US; csm-hit=tb:GVWHP05NVKPWXYHJS781+s-GVWHP05NVKPWXYHJS781|1704659747878&t:1704659747878&adb:adblk_yes; session-token=XwKzwhcALwSUcEAjOAOraT4WgvLKkfX3zqTWw+Yo8RUTuDbKqcAyHUNNHYLmV8pNfgo9XNNhsScZvRKaC3LcYyEE70fmSPfuTJjFjDYPH7ByxKHcvoxkpOqtB3+umRxPNZztPNp8j6TymgZNJpJUP8Y0r0CCfCiLBgiza30gY7V8B9tP4XRtY8y32G2I+evSNqaHY7xjbiHXjb39Uf3Bt4PxLis52cDbicGbMSNMGE9ygV1uivid7OP6ewOe5Ke6qAeI2pAozJcoCOZPaLqtcQzWVFvwxeKIaJ1ZK+RurVBJNhCkjU+SitnLRl3x0pEw1ee9cF3KxrNaJu1ZEcitKGmkL10Ef2lh",
-            "Referer": "https://www.amazon.com",
-            "authority": "www.amazon.com",
+            "Cookie":os.getenv("DE_COOKIE"),
+            "Referer": "https://www.amazon.de",
+            "authority": "www.amazon.de",
             "path": asin,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
                     "application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate, br",
         }
-
+        time.sleep(30)
         full_url = full_url + asin
         request.headers.update(headers)
         retryBackOff = 1
@@ -94,13 +83,135 @@ class Seller:
         print('Response HTTP Status Code: ', response.status_code)
         return response 
     
+eller = Seller()
+def get_product_info_and_seller_id(asin):
+    global seller
+    extracted_info = {}   
+    url = "/dp/" + asin
+    try:
+        response = seller.send_request(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-    def get_seller_info(asin):
-        sellerInfo = {}
-    #https://www.amazon.com/sp?ie=UTF8&seller=A3JCF7FZMSUD5X&asin=B08GFCX964&ref_=dp_merchant_link&isAmazonFulfilled=1
-        return sellerInfo
-    
-    def get_seller_id(response):
-        soup = BeautifulSoup(response.content, "html.parser")
-        sellerId = soup.find(id="sellerProfileTriggerId").get("href").split("seller=")[1]
-        return sellerId
+        # Extract the product title
+        product_title_tag = soup.find('span', id='productTitle')
+        if product_title_tag:
+            product_name = product_title_tag.get_text(strip=True)
+            extracted_info['product_name'] = product_name
+        else:
+            extracted_info['product_name'] = 'unknown product name'
+        store_name_tag = soup.find('a', id='bylineInfo')
+        store_name_div = soup.find('div', id='bylineInfo_feature_div')
+        #Extract the store name
+        if store_name_div:
+            store_name_tag = store_name_div.find('a')
+            if store_name_tag:
+                store_name = store_name_tag.get_text(strip=True).replace('Visit the ', '').replace(' Store', '')
+                extracted_info['store_name'] = store_name
+            else:
+                extracted_info['store_name'] = 'unknown'
+        else:
+            extracted_info['store_name'] = 'unknown'
+
+
+        # Extract the seller name and seller URL from the main div id
+        merchant_info_div = soup.find('div', id='merchantInfoFeature_feature_div')
+        if merchant_info_div:
+            seller_name_tag = merchant_info_div.find('a')
+            #print(seller_name_tag)
+            if seller_name_tag:
+                extracted_info['seller_name'] = seller_name_tag.text.strip()
+                extracted_info['seller_id'] = get_seller_id_from_url(seller_name_tag['href'])
+            else:
+                extracted_info['seller_name'] = 'Not Available'
+                extracted_info['seller_id'] = 'Not Found'
+        else:
+            extracted_info['seller_name'] = 'Not Found'
+            extracted_info['seller_id'] = 'Not Found'
+
+        if extracted_info['seller_id'] == 'Not Found':
+            print("********************************************No seller ID found in Product page********************************************************************")
+            print(asin,extracted_info)
+            seller.add_info_to_txt(asin, extracted_info)
+            return extracted_info
+
+        seller_info = get_seller_info(extracted_info['seller_id'])
+        extracted_info['seller_info'] = seller_info
+        print("***********************************************SellerID found in Product Page*****************************************************************")
+        print(asin,extracted_info)
+        seller.add_info_to_txt(asin, extracted_info)
+        return extracted_info
+    except Exception as e:
+        print("1****************************************************************************************************************")
+        print(f"An error occurred: {str(e)}")
+        print(asin,extracted_info)
+        seller.add_info_to_txt(asin, extracted_info)
+        return extracted_info
+
+def extract_info_from_text(text, info):
+    # Search for phone number, email, and address in the given text
+    phone_match = re.search(r'Telefon:\s*([\+0-9\(\) -]+)', text)
+    email_match = re.search(r'E-Mail:\s*([\w\.-]+@[\w\.-]+\.\w+)', text)
+
+    if phone_match:
+        info['phone_number'] = phone_match.group(1)
+    if email_match:
+        info['email'] = email_match.group(1)
+    # Extract business name
+    name_match = re.search(r'Verkäufer:\s*([^<]+)', text)
+    if name_match:
+        info['name'] = name_match.group(1).strip()
+    # Extract business address
+    address_match = re.findall(r'Addresse:\s*([^<]+)', text)
+    if address_match:
+        info['address'] = ', '.join(address_match).strip()
+
+def get_seller_info(seller_url):
+    global seller
+    info = {
+        'name': None,
+        'email': None,
+        'phone_number': None,
+        'address': None,
+        'about_seller': None,
+        'detailed_seller_info': None
+    }
+    url = '/sp?ie=UTF8&seller=' + seller_url
+    try:
+        # Send a request to the URL
+        response = seller.send_request(url)
+
+        # Parse the HTML content
+        soup = BeautifulSoup(response.content, 'html.parser')
+        # Extract information from the first div (About Seller) a-box-inner a-padding-medium
+        about_seller_div = soup.find(id="page-section-about-seller")
+        if about_seller_div:
+            about_seller_text = about_seller_div.get_text(separator=' ', strip=True)
+            info['about_seller'] = about_seller_text
+            extract_info_from_text(about_seller_text, info)
+        detailed_info_div = soup.find(id="page-section-detail-seller-info")
+
+
+        if detailed_info_div:
+            detailed_info_text = detailed_info_div.get_text(separator=' ', strip=True)
+            info['detailed_seller_info'] = detailed_info_text
+            extract_info_from_text(detailed_info_text, info)
+    except Exception as e:
+        print("An error occurred:", str(e))
+
+    return info
+
+def get_seller_id_from_url(seller_url):
+    # Extract the seller ID from the seller URL
+    try:
+        seller_id = None
+        if seller_url:
+            seller_id_match = re.search(r'seller=([A-Z0-9]+)', seller_url)
+            if seller_id_match:
+                seller_id = seller_id_match.group(1)
+        return seller_id
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return None
+
+
+ 
