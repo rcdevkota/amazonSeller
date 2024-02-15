@@ -1,0 +1,10 @@
+# product scrapr
+# populte.py
+# django models 
+# djang models +  Database schema for USA and DE 
+# Logs
+# exception handeling 
+# Admin panel -> main category -> sub categories -> ASINS -> SELLER INFO
+# Rescraper -> makes the json-> looks for the empty URLS-> looks for the new ASINS-> looks for the ASIN with blank infos.
+# Excel downloader -> input as json and creates downlodable csv file 
+# 
