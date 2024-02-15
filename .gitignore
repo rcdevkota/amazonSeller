@@ -2,7 +2,6 @@
 *.class
 *.o
 *.pyc
-logs/
 venv/
 # Ignore temporary files
 *~
@@ -24,7 +23,7 @@ dist/
 *.log
 
 # Ignore environment-specific files
-.env
+#.env
 .env.local
 .env.*.local
 .env.development

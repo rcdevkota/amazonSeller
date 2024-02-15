@@ -1,5 +1,6 @@
 #this script is used to get the seller information from the amazon website
 #It takes ASIN as input and returns the seller information
+import csv
 import random
 import re
 import time
@@ -68,7 +69,7 @@ class Seller:
             for asin, extracted_info in self.asins_to_txt:
                 print(f"Writing to file: {self.counter} => {asin}")
                 self.counter = self.counter + 1
-                file.write(f'"{asin}" : {extracted_info},\n')
+                file.write(f'"{asin}": {extracted_info},\n')
             self.asins_to_txt = []
     #    self.lock = False
 
@@ -296,7 +297,6 @@ def process_asin_batch(asins, asin_to_data_map, timeout=20):
     except Exception as e:
         print(f"An error occurred while processing ASIN batch: {str(e)}")
 
-
 def remove_duplicate_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, "sub_cat_asin.json")
@@ -368,9 +368,6 @@ def process_asins_and_save_in_batches():
         print("Some errors occurred while processing ASINs")
         return
 
-<<<<<<< Updated upstream
-#process_asins_and_save_in_batches()
-=======
 def find_email_and_phone(text):
     """
     Searches for email addresses and phone numbers within a given text string.
@@ -419,4 +416,3 @@ def process_file(file_path):
 
 
 process_asins_and_save_in_batches()
->>>>>>> Stashed changes
