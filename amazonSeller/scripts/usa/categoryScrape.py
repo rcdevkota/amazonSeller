@@ -9,9 +9,7 @@ import os
 from dotenv import load_dotenv
 
 
-
 load_dotenv()
-
 
 AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
@@ -43,9 +41,7 @@ USER_AGENTS = [
 ]
 
 request = requests.Session()
-
 index = 0
-
 
 def send_request(url):
     response = requests.get(
@@ -59,9 +55,6 @@ def send_request(url):
     print('Response HTTP Status Code: ', response.status_code)
     # print('Response HTTP Response Body: ', response.content)
     return response
-
-
-# send_request()
 
 def get_subcategories(category_url):
     """Fetch and parse subcategories using requests and BeautifulSoup."""
@@ -130,19 +123,6 @@ def get_subcategories(category_url):
     return subcategories_data
 
 
-# Example usage
-all_categories = [
-    {
-        "name": "Software",
-        "url": "/best-sellers-software/zgbs/software"
-    },
-    {
-        "name": "Unique Finds",
-        "url": "/Best-Sellers-Unique-Finds/zgbs/boost"
-    }
-]
-
-
 def get_lowest_child_categories(parent_categories):
     """Loop through all parent categories and get lowest child categories."""
     # print("parentcategories")
@@ -162,13 +142,6 @@ def get_lowest_child_categories(parent_categories):
             all_categories.append(category)
         else:
             get_lowest_child_categories(subcategories)  # Get the subcategories for the current subcategory
-
-
-#get_lowest_child_categories(all_categories)  # Get the lowest child categories for the given parent categories
-# with open('list.json', 'w') as f:
-#     f.write(json.dumps(all_categories))
-# print(all_categories)
-# print(index)
 
 def add_categories_to_db(all_categories):
     try:
@@ -190,8 +163,6 @@ def add_categories_to_db(all_categories):
         print(f"An error occurred: {e}")
     finally:
         print("Operation completed.")
-
-
 
 def add_subcategories_to_db(subcategories):
     categories = subcategories

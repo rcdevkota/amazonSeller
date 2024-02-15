@@ -1,7 +1,6 @@
-# This script gets all the ASIN of the Best Seller products from the database
-# It takes best seller category as input and saves the ASIN of the products of that category
-# the ASIN are saved in database in product table
-
+#This file is used to send request to the server and get the response from the server
+#the input is the land code and url
+#the output is the response from the server
 import random
 import psycopg2
 import requests
@@ -13,7 +12,6 @@ import re
 from dotenv import load_dotenv
 
 load_dotenv()
-AMAZON_BASE_URL = "https://www.amazon.com/"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
@@ -42,13 +40,14 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; ARM; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.15254"
 ]
 request = requests.Session()
-class Product:
-    """Product class."""
-    def __init__(self, value):  # Constructor
-        self.my_attribute = value
-    def my_method(self):
-        return f"Value is {self.my_attribute}"
-    def send_request(url):
+class SendRequest:
+    AMAZON_BASE_URL = "https://www.amazon.com/"
+    def __init__(self, land_code, url):
+        self.land_code = land_code
+        self.url = url
+
+    def send_request(self):
+       def send_request(url):
 
         index = 0
 
@@ -85,76 +84,4 @@ class Product:
             retryBackOff = retryBackOff + 1
         print('Response HTTP Status Code: ', response.status_code)
         return response
-    
-    def extract_ids(data):
-        ids = []
-        for item in data:
-            if 'id' in item:
-             ids.append(item['id'])
-        return ids
-
-def get_product_asin(url):
-    try:
-        response = Product.send_request(url)
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-
-        # Initialize an empty list to store product data
-        products_data = []
-        product_info = None
-        # Iterate over each product div and extract required information
-
-        grid = soup.find('div', {'class': 'p13n-gridRow'})
-        gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
-
-        retryBackOff = 1
-        while len(gridItems) == 0:
-            response = Product.send_request(url)
-            soup = BeautifulSoup(response.content, 'html.parser')
-            grid = soup.find('div', {'class': 'p13n-gridRow'})
-            gridItems = grid.find_all('div', {'class': '_cDEzb_grid-column_2hIsc'})  # {id:'gridItemRoot'})
-            if retryBackOff > 3:
-                break
-            time.sleep(retryBackOff)
-            retryBackOff = retryBackOff + 1
-        ids = []
-        asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
-        ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-        #print("second page outcome..................")
-        #print(ids)
-        #print(json.loads(asinList.get('data-client-recs-list')))
-
-        second_page_link = soup.find('li', {'class': 'a-normal'}).find('a')
-        if second_page_link:
-            second_page_url = second_page_link['href']
-            #print(second_page_url)
-            response = Product.send_request(second_page_url)
-            soup = BeautifulSoup(response.content, 'html.parser')
-            asinList = soup.find('div', {'class': 'p13n-desktop-grid'})
-            ids += Product.extract_ids(json.loads(asinList.get('data-client-recs-list')))
-            #print(second_page_link)
-            print(second_page_url)
-            #print("first and second page outcome..................")
-        print(ids)
-    except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
-        ids = []  # Return default ids if an error occurs
-    return ids
-
-def get_missing_asin_from_sub_category():
-    file_path = os.path.join(os.path.dirname(__file__), "list.json")
-    
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            data = json.load(file)
-
-        for item in data:
-            if "url" in item and ("asins" not in item or not item["asins"]):
-                asins = get_product_asin(item["url"].split("ref")[0])
-                item["asins"] = asins
-                #print(item)
-        
-        with open(file_path, "w") as file:
-            json.dump(data, file)
-
 
