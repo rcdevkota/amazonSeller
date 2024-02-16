@@ -84,7 +84,7 @@ class Seller:
                 'url': full_url,
                 'render_js': 'false',
             },
-            timeout=120
+            timeout=60
         )
         print(full_url,'Response HTTP Status Code: ', response.status_code)
         #print('Response HTTP Response Body: ', response.content)
