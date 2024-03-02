@@ -3,7 +3,7 @@ from django.db import models
 
 class Country(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    code = models.CharField(max_length=2, unique=True)
+    code = models.CharField(max_length=3, unique=True, primary_key=True)
     def __str__(self):
         return self.name
     
@@ -11,7 +11,7 @@ class Country(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=255, null=True)  # Assuming category names are unique
     link = models.URLField(max_length=255, null=True)
-    country = models.ForeignKey(Country,on_delete=models.CASCADE, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, to_field='code', null=True)
     def __str__(self):
         return self.name
     class Meta:
@@ -21,7 +21,7 @@ class Subcategory(models.Model):
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE, default=None)
     name = models.CharField(max_length=255, null=True)
     link = models.URLField(max_length=255, null=True)
-    country = models.ForeignKey(Country,on_delete=models.CASCADE, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, to_field='code', null=True)
 
     def __str__(self):
         return self.name

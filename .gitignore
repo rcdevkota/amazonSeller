@@ -3,6 +3,7 @@
 *.o
 *.pyc
 venv/
+logs/
 # Ignore temporary files
 *~
 .DS_Store

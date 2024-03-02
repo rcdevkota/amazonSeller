@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 import csv
 import pandas as pd
+import datetime
 
 
 
@@ -232,7 +233,7 @@ def add_product_info_to_db(file_path):
         print("Operation completed.")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, 'info.txt')
+file_path = os.path.join(current_dir, 'sellerInfo.txt')
 
 #add_product_info_to_db(file_path)
 
@@ -241,7 +242,7 @@ def find_email_and_phone(text):
     Searches for email addresses and phone numbers within a given text string.
     Returns a tuple containing the first found email and phone number, or None for each if not found.
     """
-    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\.[A-Za-z]{2,})?\b'
     phone_pattern = r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b'  # Simplistic pattern; adjust as needed
     
     email_match = re.search(email_pattern, text)
@@ -259,33 +260,108 @@ def process_file(file_path):
         for line in file:
             email, phone = find_email_and_phone(line)
             
-            # Extract product_name, store_name, and seller_name using regex
+            # Extract product_name and seller_name using regex
             product_name_match = re.search(r'"product_name": "(.*?)"', line)
-            store_name_match = re.search(r'"store_name": "(.*?)"', line)
             seller_name_match = re.search(r'"seller_name": "(.*?)"', line)
 
             product_name = product_name_match.group(1) if product_name_match else ''
-            store_name = store_name_match.group(1) if store_name_match else ''
             seller_name = seller_name_match.group(1) if seller_name_match else ''
             
             # Only add to CSV if email is found         
             if email:
-                csv_data.append([product_name, store_name, seller_name, email])
+                csv_data.append([product_name, seller_name, email])
 
     # Write to CSV
     with open('output.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Product Name', 'Store Name', 'Seller Name', 'Email'])
+        writer.writerow(['Product Name', 'Seller Name', 'Email'])
         writer.writerows(csv_data)
 
-#fix_json_formatting(file_path)
-print("done formatting")
-#updated_content = process_file(file_path)
-print("done csv")
-# Load the CSV file
-csv_file = os.path.join(current_dir, 'output.csv')
-df = pd.read_csv(csv_file)
+    # Remove duplicate lines from the CSV
+    df = pd.read_csv('output.csv')
+    df.drop_duplicates(inplace=True)
+    df.to_csv('output.csv', index=False)
 
-# Save as an Excel file
-excel_file = os.path.join(current_dir, 'output1.xlsx')
-df.to_excel(excel_file, index=False)
+def process_txt_file(file_path):
+    email_set = set()  # Store unique emails
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            email, _ = find_email_and_phone(line)
+            
+            # Only add to set if email is found         
+            if email:
+                email_set.add(email)
+
+    # Generate file names with current datetime
+    current_datetime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    csv_file_name = f"{current_datetime}.csv"
+    excel_file_name = f"{current_datetime}.xlsx"
+
+    # Write emails to CSV
+    with open(csv_file_name, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Email'])
+        writer.writerows([[email] for email in email_set])
+
+    # Convert CSV to Excel
+    df = pd.read_csv(csv_file_name)
+    df.to_excel(excel_file_name, index=False)
+
+    return csv_file_name, excel_file_name
+
+#updated_content = process_txt_file(file_path)
+#print("done csv")
+
+# # Load the CSV file
+# # csv_file = updated_content[0]
+# # df = pd.read_csv(csv_file)
+
+# # Generate Excel file name with current datetime
+# # current_datetime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+# # excel_file_name = f"output_{current_datetime}.xlsx"
+
+# # Save as an Excel file
+# # df.to_excel(excel_file_name, index=False)
+
+
+
+
+# #fix_json_formatting(file_path)
+# print("done formatting")
+# #updated_content = process_file(file_path)
+# updated_content = process_txt_file(file_path)
+# print("done csv")
+# Load the CSV file
+# csv_file = os.path.join(current_dir, 'a.csv')
+# df = pd.read_csv(csv_file)
+# df.drop_duplicates(subset=['Email'], inplace=True)
+# # # Save as an Excel file
+# excel_file = os.path.join(current_dir, 'a.xlsx')
+# df.to_excel(excel_file, index=False)
+
+# # Read the Excel file
+# excel_file = os.path.join(current_dir, '02032024.xlsx')
+# df = pd.read_excel(excel_file)
+
+# # Remove duplicate lines
+# df.drop_duplicates(inplace=True)
+
+# # Save the updated DataFrame to a CSV file
+# csv_file = os.path.join(current_dir, 'a.csv')
+# df.to_csv(csv_file, index=False)
+
+# Read the asin.txt file
+with open('asin.txt', 'r') as file:
+    lines = file.readlines()
+
+# Find the index of the line that contains 'B071K8PFHG'
+index = next((i for i, line in enumerate(lines) if 'B071K8PFHG' in line), None)
+
+# Remove everything before the line with 'B071K8PFHG'
+if index is not None:
+    lines = lines[index:]
+
+# Write the updated lines back to the asin.txt file
+with open('asin.txt', 'w') as file:
+    file.writelines(lines)

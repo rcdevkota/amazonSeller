@@ -3,13 +3,11 @@
 # the ASIN are saved in database in product table
 
 import random
-import psycopg2
 import requests
 from bs4 import BeautifulSoup
 import json
 import os
 import time
-import re
 from dotenv import load_dotenv
 
 load_dotenv()
