@@ -75,7 +75,7 @@ class Seller:
 
     def send_request(self, url):
         #print("+++++++++++++++++++++++++++++++++Sending request+++++++++++++++++++++++++++++++++")
-        full_url= "https://www. amazon.de" + url
+        full_url= "https://www.amazon.de" + url
         #print(full_url)
         response = requests.get(
             url='https://app.scrapingbee.com/api/v1/',
@@ -100,8 +100,8 @@ class Seller:
             "+WFpTLONMwq4Rf5N1OAAvXKGOOd7EJT+KIx2TK+ePErJBXZEydz/vb36n/9FMuT9DyhmtT3j4OgZQTJFpTvVQYNbU2dXtbW3j7077N10ULoN+AVL89Xo"
             "+Mi4DT9IPiD5sTVYMftd0XGD+G9/ocQBArPHoqJRuN28R9AyJVbQNzetOjGt0ZRQEzKdLLGMeEKXcSGBLe5tvpw3clZW5zynRw0LwdYvtbcf"
             "+qMWPPI7HPHvWlWp2zsGAsBv6p87LpdKh4ruT1rK24bUt7b2GqVpEop",
-            "Referer": "https://www. amazon.de",
-            "authority": "www. amazon.de",
+            "Referer": "https://www.amazon.de",
+            "authority": "www.amazon.de",
             "path": url,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
                     "application/signed-exchange;v=b3;q=0.7",
