@@ -144,7 +144,7 @@ def get_product_info_and_seller_id(asin):
         if store_name_div:
             store_name_tag = store_name_div.find('a')
             if store_name_tag:
-                store_name = store_name_tag.get_text(strip=True).replace('Besuche den ', '').replace(' Store', '')
+                store_name = store_name_tag.get_text(strip=True).replace('Visit the ', '').replace(' Store', '')
                 extracted_info['store_name'] = store_name
             else:
                 extracted_info['store_name'] = 'unknown'
