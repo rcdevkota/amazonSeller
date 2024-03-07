@@ -1,5 +1,8 @@
-#Postgres public Ip 
-# Django webapp hosting
-# Django URL routing to public Ip
-# Database schema schema change -> populate cat subcat asin
+#host postgres in server with public Ip 
+#host django app with public ip
+*** *** *** *** *** *** *** *** ***
+# finalise Database schema -> make migrations-> populate main category, sub category, asin
+# refactoring from multi threading to async function
+# ssh file to automate process
+#
 # 

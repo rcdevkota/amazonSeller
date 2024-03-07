@@ -11,6 +11,11 @@ The tool is mainly divided into three different scraper:
 4. goes through all the asinsand saves seller info if found
 
 
+To Deploy the project:
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+
 All the database infos are saved in environment variables
 The cookies info is found in .env file as well 
 
