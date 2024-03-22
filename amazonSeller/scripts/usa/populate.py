@@ -29,10 +29,9 @@ def get_asin_missing_item_from_sub_category():
 def get_all_asins():
     # Use '__file__' to get the directory of the current script. Adjust if necessary.
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "sub_cat_asin.json")
+    file_path = os.path.join(current_dir, "list.json")
     print(file_path)    
     asin_set = set()  # Using a set to ensure uniqueness
-    print(" dsadfsafile")
 
     # Check if the JSON file exists
     if os.path.exists(file_path):
@@ -54,7 +53,7 @@ def get_all_asins():
         for asin in asin_set:
             asin_file.write(asin + "\n")
 
-    return list(asin_set)  # Optionally, return the list of unique ASINs
+    #return list(asin_set)  # Optionally, return the list of unique ASINs
  
 def remove_duplicate_asins():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -252,7 +251,9 @@ def find_email(text):
     Searches for email addresses and phone numbers within a given text string.
     Returns a tuple containing the first found email and phone number, or None for each if not found.
     """
-    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\.[A-Za-z]{2,})?\b'
+    #email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\.[A-Za-z]{2,})?\b'
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(\.[A-Za-z]{2,})*\b'
+
     phone_pattern = r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b'  # Simplistic pattern; adjust as needed
     
     email_match = re.search(email_pattern, text)
@@ -263,26 +264,62 @@ def find_email(text):
 
     return (email)
 
+# Improved email finding regex
+email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(\.[A-Za-z]{2,})*\b'
+
+def find_email(text):
+    # Utilize the improved regex to find an email in the provided text
+    match = re.search(email_pattern, text)
+    if match:
+        return match.group(0)
+    return None
+
+def find_all_unique_emails(file_path):
+    email_set = set()  # Store unique emails
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            email = find_email(line)
+            if email:
+                email_set.add(email)
+
+    # Generate file names with current datetime
+    current_datetime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
+    csv_file_name = f"only-emails-{current_datetime}.csv"
+    excel_file_name = f"only-emails-{current_datetime}.xlsx"
+
+    # Write emails to CSV
+    with open(csv_file_name, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Email'])
+        for email in email_set:
+            writer.writerow([email])
+
+    # Convert CSV to Excel using pandas for simplicity
+    df = pd.read_csv(csv_file_name)
+    df.to_excel(excel_file_name, index=False)
+
+    return csv_file_name, excel_file_name
+
 def make_csv_from_txt(file_path):
     csv_data = []  # Store CSV data
 
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
             # Extract ASIN, product_name, store_name, and email using regex
-            asin_match = re.search(r'"([A-Z0-9]{10})":', line)
+            #asin_match = re.search(r'"([A-Z0-9]{10})":', line)
             product_name_match = re.search(r'"product_name": "(.*?)"', line)
             store_name_match = re.search(r'"store_name": "(.*?)"', line)
             email_match = find_email(line)
 
-            asin = asin_match.group(1) if asin_match else ''
+            #asin = asin_match.group(1) if asin_match else ''
             product_name = product_name_match.group(1) if product_name_match else ''
             store_name = store_name_match.group(1) if store_name_match else ''
             email = email_match if email_match else ''
 
-            # Only add to CSV if email is found and store_name is not Amazon
-            if email and store_name != "Amazon" and store_name != "Amazon Renewed" and product_name not in [row[1] for row in csv_data]:
+            if email and email not in [row[2] for row in csv_data] and store_name != "Amazon" and store_name != "Amazon Renewed":
                 csv_data.append([product_name, store_name, email])
-
+    
     # Generate file name with current datetime
     current_datetime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     csv_file_name = f"{current_datetime}.csv"
@@ -300,92 +337,62 @@ def make_csv_from_txt(file_path):
 
     return csv_file_name, excel_file_name
 
-def make_csv_without_store(file_path):
-    email_set = set()  # Store unique emails
-
-    with open(file_path, 'r', encoding='utf-8') as file:
-        for line in file:
-            store_name = re.search(r'"store_name": "(.*?)"', line)
-            email, _ = find_email(line)
-            
-            # Only add to set if email is found         
-            if email and store_name != "":
-                email_set.add(email)
-
-    # Generate file names with current datetime
-    current_datetime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
-    csv_file_name = f"{current_datetime}.csv"
-    excel_file_name = f"{current_datetime}.xlsx"
-
-    # Write emails to CSV
-    with open(csv_file_name, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Email'])
-        writer.writerows([[email] for email in email_set])
-
-    # Convert CSV to Excel
-    df = pd.read_csv(csv_file_name)
-    df.to_excel(excel_file_name, index=False)
-
-    return csv_file_name, excel_file_name
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, 'sellerInfo.txt')
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# file_path = os.path.join(current_dir, 'sellerInfo.txt')
 
 #cleanTxtFile(file_path)
-updated_content = make_csv_without_store(file_path)
-print(f"CSV file '{updated_content}' generated successfully.")
+#fix_json_formatting(file_path)
+#updated_content = make_csv_from_txt(file_path)
+# updated_content = find_all_unique_emails(file_path)
+# print(f"CSV file '{updated_content}' generated successfully.")
 
+def remove_all_duplicate_asins():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    asin_file_path = os.path.join(current_dir, "asin.txt")
+    all_asin_file_path = os.path.join(current_dir, "all-asin-us.txt")
+    
+    if os.path.exists(asin_file_path) and os.path.exists(all_asin_file_path):
+        with open(asin_file_path, "r") as asin_file:
+            asin_list = asin_file.readlines()
+        
+        with open(all_asin_file_path, "r") as all_asin_file:
+            all_asin_list = all_asin_file.readlines()
+        
+        # Remove duplicates by comparing with all ASINs
+        unique_asin_list = list(set(asin_list) - set(all_asin_list))
+        
+        # Write the updated ASINs back to the file
+        with open(asin_file_path, "w") as asin_file:
+            asin_file.writelines(unique_asin_list)
+        
+        print("Duplicate ASINs removed successfully.")
+    else:
+        print("File not found.")
 
-# Load the CSV file
-# csv_file = updated_content[0]
-# df = pd.read_csv(csv_file)
+def divide_asin():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    asin_file_path = os.path.join(current_dir, "asin.txt")
+    
+    if os.path.exists(asin_file_path):
+        with open(asin_file_path, "r") as asin_file:
+            asin_list = asin_file.readlines()
+        
+        # Calculate the number of ASINs per file
+        num_asins = len(asin_list)
+        asins_per_file = num_asins // 4
+        
+        # Divide the ASINs into 4 different lists
+        asin_lists = [asin_list[i:i+asins_per_file] for i in range(0, num_asins, asins_per_file)]
+        
+        # Write each list of ASINs to a separate file
+        for i, asin_list in enumerate(asin_lists):
+            file_name = f"asin_{i+1}.txt"
+            file_path = os.path.join(current_dir, file_name)
+            with open(file_path, "w") as file:
+                file.writelines(asin_list)
+        
+        print("ASINs divided successfully.")
+    else:
+        print("File not found.")
 
-# Generate Excel file name with current datetime
-# current_datetime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-# excel_file_name = f"output_{current_datetime}.xlsx"
-
-# Save as an Excel file
-# df.to_excel(excel_file_name, index=False)
-
-
-
-
-# #fix_json_formatting(file_path)
-# print("done formatting")
-# #updated_content = process_file(file_path)
-# updated_content = process_txt_file(file_path)
-# print("done csv")
-# Load the CSV file
-# csv_file = os.path.join(current_dir, 'a.csv')
-# df = pd.read_csv(csv_file)
-# df.drop_duplicates(subset=['Email'], inplace=True)
-# # # Save as an Excel file
-# excel_file = os.path.join(current_dir, 'a.xlsx')
-# df.to_excel(excel_file, index=False)
-
-# # Read the Excel file
-# excel_file = os.path.join(current_dir, '02032024.xlsx')
-# df = pd.read_excel(excel_file)
-
-# # Remove duplicate lines
-# df.drop_duplicates(inplace=True)
-
-# # Save the updated DataFrame to a CSV file
-# csv_file = os.path.join(current_dir, 'a.csv')
-# df.to_csv(csv_file, index=False)
-
-# # Read the asin.txt file
-# with open('asin.txt', 'r') as file:
-#     lines = file.readlines()
-
-# # Find the index of the line that contains 'B071K8PFHG'
-# index = next((i for i, line in enumerate(lines) if 'B071K8PFHG' in line), None)
-
-# # Remove everything before the line with 'B071K8PFHG'
-# if index is not None:
-#     lines = lines[index:]
-
-# # Write the updated lines back to the asin.txt file
-# with open('asin.txt', 'w') as file:
-#     file.writelines(lines)
+divide_asin()

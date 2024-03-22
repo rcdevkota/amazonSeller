@@ -4,6 +4,7 @@
 *.pyc
 venv/
 logs/
+server/
 # Ignore temporary files
 *~
 .DS_Store

@@ -58,9 +58,10 @@ class Seller:
         self.asins_to_txt.append((asin, extracted_info))
 
     def write_failed_asins_to_file(self, asins):
-        with open('failed_asins.txt', 'a') as file:
-            for asin in asins:
-                file.write(f"{asin}\n")
+        print("Writing failed ASINs to file")
+        # with open('failed_asins.txt', 'a') as file:
+        #     for asin in asins:
+        #         file.write(f"{asin}\n")
 
     def write_to_file(self):
 #        copyList = self.asins_to_txt.copy()
@@ -323,7 +324,7 @@ def remove_duplicate_asins():
     
 def get_asins_from_asin_txt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    asin_file_path = os.path.join(current_dir, "asin.txt")
+    asin_file_path = os.path.join(current_dir, "asin_1.txt")
     asins: List[str] = []
     with open(asin_file_path, "r") as file:
         for line in file.readlines():

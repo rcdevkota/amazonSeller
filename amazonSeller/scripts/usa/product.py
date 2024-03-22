@@ -47,41 +47,20 @@ class Product:
     def my_method(self):
         return f"Value is {self.my_attribute}"
     def send_request(url):
-
-        index = 0
-
-        """Fetch and parse subcategories using requests and BeautifulSoup."""
-        userAgentIndex = random.randint(0, len(USER_AGENTS) - 1)
-        user = USER_AGENTS[userAgentIndex]
-        # if "ref" in url:
-        #     url = url.split("ref")[0]
-        headers = {
-            "user-agent": user,
-             "Cookie": "uQEO+0qKCQfzI7nHWfd1pdzL2v8lKZmhW0OGIzAUjSH8ZESnSiO2TD58r8IuZ6xw8sJn1ve"
-                         "/Ndf/cjciqUYzg5K14tNT1RbavpKNWxmHDYfL7pPp+SkvXMD1qFEF7BaAWWJuypaTFEddGKwl8SgIaqQ/"
-                         "iZPcFFHPBfyBAEX507EAWOEUiazCsDG6aAzudHv/Lo+77wvm81x8wrko8nO2xfWP3SCdA8vKM8bP24u9uaKMVD2oxytQuCV+1Ey0TSXiJYFw9UNbfGjxQ8CF2prWanvK42m9N3+SWE2AGcBGwRapLcWhLSoQGiZdGnQYL2qNTFfNlAjI/g6XBvQ8XpMDOtNS/WJxlm7u ",
-
-
-            "Referer": "https://www.amazon.com",
-            "authority": "www.amazon.com",
-            "path": url,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
-                      "application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-        }
-
-        full_url = "https://www.amazon.com" + url
-        print(full_url)
-        request.headers.update(headers)
-        retryBackOff = 1
-        response = None
-        while not response:
-            response = request.get(full_url, headers=headers, cookies={})
-            if retryBackOff >= 10:
-                break
-            time.sleep(retryBackOff)
-            retryBackOff = retryBackOff + 1
-        print('Response HTTP Status Code: ', response.status_code)
+        #print("+++++++++++++++++++++++++++++++++Sending request+++++++++++++++++++++++++++++++++")
+        full_url= "https://www.amazon.com" + url
+        #print(full_url)
+        response = requests.get(
+            url='https://app.scrapingbee.com/api/v1/',
+            params={
+                'api_key': 'RVHWA75QSDH3YVIF3GGQ9G8PPS7SY6YCBZN2402YQ7G63638AK3W1Q4TQ00AYQ4JGSNARY4ARNF87EFL',
+                'url': full_url,
+                'render_js': 'false',
+            },
+            timeout=60
+        )
+        print(full_url,'Response HTTP Status Code: ', response.status_code)
+        #print('Response HTTP Response Body: ', response.content)
         return response
     
     def extract_ids(data):
@@ -154,5 +133,7 @@ def get_missing_asin_from_sub_category():
         
         with open(file_path, "w") as file:
             json.dump(data, file)
+
+get_missing_asin_from_sub_category()
 
 

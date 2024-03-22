@@ -351,7 +351,7 @@ def remove_duplicate_asins():
     
 def get_asins_from_asin_txt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    asin_file_path = os.path.join(current_dir, "all-asins.txt")
+    asin_file_path = os.path.join(current_dir, "asin.txt")
     asins: List[str] = []
     with open(asin_file_path, "r") as file:
         for line in file.readlines():
