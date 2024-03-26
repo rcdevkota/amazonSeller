@@ -44,17 +44,21 @@ request = requests.Session()
 index = 0
 
 def send_request(url):
-    response = requests.get(
-        url='https://app.scrapingbee.com/api/v1/',
-        params={
-            'api_key': 'RVHWA75QSDH3YVIF3GGQ9G8PPS7SY6YCBZN2402YQ7G63638AK3W1Q4TQ00AYQ4JGSNARY4ARNF87EFL',
-            'url': url,
-        },
-
-    )
-    print('Response HTTP Status Code: ', response.status_code)
-    # print('Response HTTP Response Body: ', response.content)
-    return response
+        print("+++++++++++++++++++++++++++++++++Sending request+++++++++++++++++++++++++++++++++")
+        full_url=  url
+        print(full_url)
+        response = requests.get(
+            url='https://app.scrapingbee.com/api/v1/',
+            params={
+                'api_key': 'N38XB8KVB7DUA7XS5K084RADZA0DRXL0J1T2G6GUSEZZE808U1J2U098DOAQ6CK9SQNMLIJC2BZRHTW8',
+                'url': full_url,
+                'render_js': 'false',
+            },
+            timeout=60
+        )
+        print(full_url,'Response HTTP Status Code: ', response.status_code)
+        #print('Response HTTP Response Body: ', response.content)
+        return response
 
 def get_subcategories(category_url):
     """Fetch and parse subcategories using requests and BeautifulSoup."""
@@ -83,14 +87,15 @@ def get_subcategories(category_url):
     request.headers.update(headers)
     retryBackOff = 1
     response = None
-    while not response:
-        response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
-        time.sleep(retryBackOff)
-        if retryBackOff >= 10:
-            break
-        retryBackOff = retryBackOff + 1
-    # response = send_request(full_url)
-    # print("response")      
+    # while not response:
+    #     #response = request.get(full_url, headers=headers, cookies={})  # proxies=proxy)
+    #     response = send_request(full_url)
+    #     time.sleep(retryBackOff)
+    #     if retryBackOff >= 2:
+    #         break
+    #     retryBackOff = retryBackOff + 1
+    response = send_request(full_url)
+    print("response")      
     # print(response)
     subcategories_data = []
 
@@ -186,11 +191,116 @@ def add_subcategories_to_db(subcategories):
     finally:
         print("Operation completed.")
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, 'test.json')
-with open(file_path, 'r') as f:
-    subcategories = json.load(f)
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# file_path = os.path.join(current_dir, 'test.json')
+# with open(file_path, 'r') as f:
+#     subcategories = json.load(f)
 
 #add_subcategories_to_db(subcategories)
+all_categories = [
+ {
+            "name": "Amazon-Geräte & Zubehör",
+            "url": "/gp/new-releases/amazon-devices/ref=zg_bs_nav_amazon-devices_0"
+        },
+        {
+            "name": "Apps & Spiele",
+            "url": "/gp/new-releases/mobile-apps/ref=zg_bs_nav_mobile-apps_0"
+        },
+        {
+            "name": "Auto & Motorrad",
+            "url": "/gp/new-releases/automotive/ref=zg_bs_nav_automotive_0"
+        },
+        {
+            "name": "Baby",
+            "url": "/gp/new-releases/baby/ref=zg_bs_nav_baby_0"
+        },
+        {
+            "name": "Baumarkt",
+            "url": "/gp/new-releases/diy/ref=zg_bs_nav_diy_0"
+        },
+        {
+            "name": "Beleuchtung",
+            "url": "/gp/new-releases/lighting/ref=zg_bs_nav_lighting_0"
+        },
+        {
+            "name": "Bürobedarf & Schreibwaren",
+            "url": "/gp/new-releases/officeproduct/ref=zg_bs_nav_officeproduct_0"
+        },
+        {
+            "name": "Climate Pledge Friendly",
+            "url": "/gp/new-releases/climate-pledge/ref=zg_bs_nav_climate-pledge_0"
+        },
+        {
+            "name": "Computer & Zubehör",
+            "url": "/gp/new-releases/computers/ref=zg_bs_nav_computers_0"
+        },
+        {
+            "name": "Drogerie & Körperpflege",
+            "url": "/gp/new-releases/drugstore/ref=zg_bs_nav_drugstore_0"
+        },
+        {
+            "name": "Elektro-Großgeräte",
+            "url": "/gp/new-releases/appliances/ref=zg_bs_nav_appliances_0"
+        },
+        {
+            "name": "Elektronik & Foto",
+            "url": "/gp/new-releases/ce-de/ref=zg_bs_nav_ce-de_0"
+        },
+        {
+            "name": "Fashion",
+            "url": "/gp/new-releases/fashion/ref=zg_bs_nav_fashion_0"
+        },
+        {
+            "name": "Garten",
+            "url": "/gp/new-releases/garden/ref=zg_bs_nav_garden_0"
+        },
+        {
+            "name": "Gewerbe, Industrie & Wissenschaft",
+            "url": "/gp/new-releases/industrial/ref=zg_bs_nav_industrial_0"
+        },
+        {
+            "name": "Handmade Produkte",
+            "url": "/gp/new-releases/handmade/ref=zg_bs_nav_handmade_0"
+        },
+        {
+            "name": "Haustier",
+            "url": "/gp/new-releases/pet-supplies/ref=zg_bs_nav_pet-supplies_0"
+        },
+        {
+            "name": "Kamera & Foto",
+            "url": "/gp/new-releases/photo/ref=zg_bs_nav_photo_0"
+        },
+        {
+            "name": "Kosmetik",
+            "url": "/gp/new-releases/beauty/ref=zg_bs_nav_beauty_0"
+        },
+        {
+            "name": "Küche, Haushalt & Wohnen",
+            "url": "/gp/new-releases/kitchen/ref=zg_bs_nav_kitchen_0"
+        },
+        {
+            "name": "Lebensmittel & Getränke",
+            "url": "/gp/new-releases/grocery/ref=zg_bs_nav_grocery_0"
+        },
+        {
+            "name": "Musikinstrumente & DJ-Equipment",
+            "url": "/gp/new-releases/musical-instruments/ref=zg_bs_nav_musical-instruments_0"
+        },
+        {
+            "name": "Spielzeug",
+            "url": "/gp/new-releases/toys/ref=zg_bs_nav_toys_0"
+        },
+        {
+            "name": "Sport & Freizeit",
+            "url": "/gp/new-releases/sports/ref=zg_bs_nav_sports_0"
+        }
+]
 
+
+
+get_lowest_child_categories(all_categories)  # Get the lowest child categories for the given parent categories
+with open('list.json', 'w') as f:
+    f.write(json.dumps(all_categories))
+print(all_categories)
+print(index)
 

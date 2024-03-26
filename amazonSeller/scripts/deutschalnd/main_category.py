@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import re
 
 def fetch_amazon_best_sellers():
-    url = "https://www.amazon.de/gp/bestsellers/"
+    url = "https://www.amazon.com/gp/new-releases/"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"}
 
@@ -31,7 +31,7 @@ fetch_amazon_best_sellers()
 def validate_categories(data):
     valid_entries = []
     for line in data:
-        match = re.match(r'Category: (.*?), URL: (https?://www\.amazon\.de[\S]+)', line)
+        match = re.match(r'Category: (.*?), URL: (https?://www\.amazon\.com[\S]+)', line)
         if match:
             category, url = match.groups()
             valid_entries.append({'category': category, 'url': url})
@@ -40,7 +40,7 @@ def validate_categories(data):
 # Fetch categories and validate them
 fetched_data = fetch_amazon_best_sellers()
 print(fetched_data)
-#valid_categories = validate_categories(fetched_data)
+valid_categories = validate_categories(fetched_data)
 
 # for entry in valid_categories:
 #     print(entry)
