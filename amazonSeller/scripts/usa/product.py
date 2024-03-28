@@ -119,7 +119,7 @@ def get_product_asin(url):
     return ids
 
 def get_missing_asin_from_sub_category():
-    file_path = os.path.join(os.path.dirname(__file__), "list.json")
+    file_path = os.path.join(os.path.dirname(__file__), "asins.json")
     
     if os.path.exists(file_path):
         with open(file_path, "r") as file:
